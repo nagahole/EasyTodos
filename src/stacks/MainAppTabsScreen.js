@@ -169,7 +169,7 @@ export default function MainApp() {
         setOpen={open => setAddTodoModalOpen(open)}
         onSubmit={(title, description, color, dueDate = null) => {
 
-          dbRef("/todos").push(new Todo(title, description, color, dueDate));
+          dbRef("/todos").push(new Todo(title, description.trim(), color, dueDate));
 
         }}
       />

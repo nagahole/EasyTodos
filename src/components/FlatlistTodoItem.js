@@ -1,5 +1,5 @@
 import { View, TouchableOpacity, StyleSheet, Alert, Dimensions } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Box, PresenceTransition, Pressable, Text } from 'native-base';
 import { Swipeable, RectButton } from 'react-native-gesture-handler'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
@@ -199,36 +199,35 @@ export default function FlatlistTodoItem(props) {
                   : props.item.color === 'violet'
                   ? ['violet.500', 'violet.600']
                   : ['gray.50', 'gray.100']
-                ,
-                start: [0, 0],
-                end: [1, 0]
               }
             }}
           >
-            <Text textAlign="center" fontSize="md" lineHeight={18}>
-              <Box mb="2">
-                <Text fontSize="12" color="white">
-                  {
-                    props.item.dueDate && new Date(props.item.dueDate).toLocaleTimeString(undefined, {
-                      hour: 'numeric',
-                      minute: '2-digit'
-                    })
-                  }
+            {
+              props.item.dueDate && 
+              <>
+                <Box mb="2">
+                  <Text fontSize="14" color="white">
+                      {new Date(props.item.dueDate).toLocaleTimeString(undefined, {
+                        hour: 'numeric',
+                        minute: '2-digit'
+                      })}
+                  </Text>
+                </Box>
+                <Text textAlign="center" fontSize="md" lineHeight={18}>
+                  { // The bug was caused by the box above being inside this text component
+                    // which for some reason on height changes on the flatlist item caused
+                    // endless growing of the item. The descriptiontext wasn't the issue: it
+                    // just aggravated it whenever it changed the height of the list item
+                    new Date(props.item.dueDate).toLocaleDateString(undefined, {
+                      day: 'numeric',
+                    })}
+                  {'\n'}
+                  { new Date(props.item.dueDate).toLocaleDateString(undefined, {
+                      month: 'short'
+                    })}
                 </Text>
-              </Box>
-              {'\n'}
-              {
-                props.item.dueDate && new Date(props.item.dueDate).toLocaleDateString(undefined, {
-                  day: 'numeric',
-                })
-              }
-              {'\n'}
-              {
-                props.item.dueDate && new Date(props.item.dueDate).toLocaleDateString(undefined, {
-                  month: 'short'
-                })
-              }
-            </Text>
+              </>
+            }
             
           </Box>
           <Box flex={5} py="4" px="4">
@@ -267,9 +266,7 @@ export default function FlatlistTodoItem(props) {
               (props.item.description !== "") && 
               <Text
                 mt="1"
-                _dark={{
-                  color: "coolGray.500"
-                }}
+                color="coolGray.500"
               >{props.item.description}</Text>
             }
             

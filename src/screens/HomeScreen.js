@@ -187,16 +187,9 @@ export default function HomeScreen({navigation, route}) {
   }
 
   function saveModalChanges() {
-    console.log("Saving modal changes:");
-    console.log("Title:", modalItem.title);
-    console.log("Description: '" + modalItem.description + "'");
-    console.log("Color:", modalItem.color);
-    console.log("dueDate:", modalItem.dueDate);
-
-
     dbRef(`/todos/${modalItem.id}`).update({
       title: modalItem.title,
-      description: modalItem.description,
+      description: modalItem.description.trim(),
       color: modalItem.color,
       dueDate: modalItem.dueDate
     });
@@ -331,7 +324,7 @@ export default function HomeScreen({navigation, route}) {
           <FlatlistTodoItem
             viewableItems={viewableItems}
             setModalItem={setModalItem}
-            setModalOpen={bool => setModalOpen(bool)}
+            setModalOpen={setModalOpen}
             pinItem={() => pinItem(item)}
             unpinItem={() => unpinItem(item)}
             item={item}
