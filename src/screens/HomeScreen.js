@@ -2,7 +2,7 @@ import { Box, Button, FlatList, HStack, Menu, Pressable, Text, View, VStack } fr
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCallback, useEffect } from "react";
 import { useState } from "react";
-import { LayoutAnimation } from "react-native";
+import { Alert, LayoutAnimation } from "react-native";
 import FlatlistTodoItem from "../components/FlatlistTodoItem";
 import EditTodoModal from "../components/EditTodoModal";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -134,9 +134,7 @@ export default function HomeScreen({navigation, route}) {
   },[]);
 
   useEffect(() => {
-    console.log("Callback");
     if (!justLaunched.current) {
-      console.log('configuring animation');
       LayoutAnimation.configureNext({
         duration: 300,
         update: { type: LayoutAnimation.Types.easeInEaseOut },
@@ -156,8 +154,6 @@ export default function HomeScreen({navigation, route}) {
         update: { duration: 300, type: LayoutAnimation.Types.easeInEaseOut },
       });
     }
-
-    console.log("Sorting todos");
     
     setTodos(prev => { 
       /*
@@ -381,6 +377,18 @@ export default function HomeScreen({navigation, route}) {
     });
   }
 
+  function clearAllCompletedTodos() {
+    for (let todo of todos) {
+      if (todo.complete) {
+        dbRef(`/todos/${todo.id}`)
+          .remove()
+          .catch(e => {
+            console.warn(e);
+          })
+      }
+    }
+  }
+
   function renderHeaderComponent() {
     return (
       <Box>
@@ -440,6 +448,30 @@ export default function HomeScreen({navigation, route}) {
                 </Menu.Item>
                 {/* Cannot be bothered sorting by color */}
               </Menu.Group>
+              {
+                route.params.mode === "completed" &&
+                  <Menu.Group title="Other">
+                    <Menu.Item h="12" justifyContent="center" value="creation date" onPress={() => {
+                      Alert.alert(
+                        "Clear all completed todos?",
+                        "This cannot be undone. Continue?",
+                        [
+                          {
+                            text: "Cancel",
+                            style: 'cancel'
+                          },
+                          {
+                            text: "Delete",
+                            style: "destructive",
+                            onPress: () => { clearAllCompletedTodos() }
+                          }
+                        ]
+                      )
+                    }}>
+                      <FontAwesomeIcon color="white" size={20} icon="fa-solid fa-trash" />
+                    </Menu.Item>
+                  </Menu.Group>
+              }
             </Menu>
           </HStack>
         </HStack>
