@@ -1,8 +1,8 @@
-import { View, Text } from 'react-native'
+import { View, Text, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Box, Button, Center, FormControl, Heading, Input, VStack } from 'native-base';
-import { auth } from '../../firebase';
+import auth from "@react-native-firebase/auth";
 
 export default function ForgotPasswordScreen({navigation, route}) {
 
@@ -11,12 +11,13 @@ export default function ForgotPasswordScreen({navigation, route}) {
   const insets = useSafeAreaInsets();
 
   function handleResetEmail() {
-    auth.sendPasswordResetEmail(email)
+    auth()
+      .sendPasswordResetEmail(email)
       .then(() => {
-        alert("Password reset email sent");
+        Alert.alert("Password reset email sent");
       })
       .catch(error => {
-        alert(error.message);
+        Alert.alert(error.nativeErrorCode, error.nativeErrorMessage);
       });
   }
 

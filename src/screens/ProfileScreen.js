@@ -2,16 +2,14 @@ import { Alert, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { Box, Circle, HStack, ScrollView, VStack, Text, Button } from 'native-base'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { auth } from '../firebase';
+import auth from "@react-native-firebase/auth";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import SettingsTextItem from '../components/SettingsTextItem';
-import { useDispatch } from 'react-redux';
 import { setEmail, setPassword, setSignedIn, setUID } from '../redux/action';
 
 export default function ProfileScreen({route, navigation}) {
 
   const insets = useSafeAreaInsets();
-  const dispatch = useDispatch();
 
   function handleSignOut() {
     Alert.alert(
@@ -26,16 +24,12 @@ export default function ProfileScreen({route, navigation}) {
           text: "Yes",
           style: "destructive",
           onPress: () => {
-            auth
+            auth()
               .signOut()
               .then(() => {
-                dispatch(setEmail(""));
-                dispatch(setPassword(""));
-                dispatch(setSignedIn(false));
-                dispatch(setUID(""));
                 navigation.replace("Login");
               })
-              .catch(error => alert(error.message))
+              .catch(error => Alert.alert(error.nativeErrorCode, error.nativeErrorMessage))
           }
         }
       ]);
@@ -62,20 +56,20 @@ export default function ProfileScreen({route, navigation}) {
         <VStack p="5">
           <HStack alignItems="center" space="3" w="100%">
             <Circle bg="green.500" size="12">
-              <Text color="dark.100" fontSize="2xl">{auth.currentUser?.email[0].toUpperCase()}</Text>
+              <Text color="dark.100" fontSize="2xl">{auth().currentUser?.email[0].toUpperCase()}</Text>
             </Circle>
             <VStack>
-              <Text fontSize="11" color="gray.400">{auth.currentUser?.uid}</Text>
+              <Text fontSize="11" color="gray.400">{auth().currentUser?.uid}</Text>
               <HStack justifyContent="space-between" alignItems="center">
-                <Text fontSize="16">{auth.currentUser?.email}</Text>
+                <Text fontSize="16">{auth().currentUser?.email}</Text>
                 <Box>
-                  <FontAwesomeIcon icon="fa-solid fa-circle-check" color={auth.currentUser?.emailVerified? "#22c55e" : "#52525b"} style={{
+                  <FontAwesomeIcon icon="fa-solid fa-circle-check" color={auth().currentUser?.emailVerified? "#22c55e" : "#52525b"} style={{
                       marginTop: 2.5,
                       marginLeft: 5
                     }}
                   />
                   {
-                    !auth.currentUser?.emailVerified &&
+                    !auth().currentUser?.emailVerified &&
                       <FontAwesomeIcon icon="fa-solid fa-slash" size={17} color="#ef4444" style={{
                         position: 'absolute',
                         marginTop: 2.5,

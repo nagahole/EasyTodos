@@ -5,8 +5,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ProfileStackScreen from "./ProfileStackScreen";
 import AddTodoScreen from "../screens/AddTodoScreen";
-import { firebase } from "@react-native-firebase/database";
-import { auth, databaseURL } from "../firebase";
 import { View, Text, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import { useState } from "react";
 import AddTodoModal from "../components/AddTodoModal";
@@ -168,9 +166,12 @@ export default function MainApp() {
       <AddTodoModal
         isOpen={addTodoModalOpen}
         setOpen={open => setAddTodoModalOpen(open)}
-        onSubmit={(title, description, color, dueDate = null) => {
+        onSubmit={(title, description, color, dueDate = null, allDay = false) => {
+          
+          let todo = new Todo(title, description.trim(), color, dueDate);
+          todo.allDay = allDay;
 
-          dbRef("/todos").push(new Todo(title, description.trim(), color, dueDate));
+          dbRef("/todos").push(todo);
 
         }}
       />

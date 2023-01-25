@@ -1,13 +1,22 @@
-import { Alert, KeyboardAvoidingView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { auth } from '../../firebase';
 import { Box, Button, Center, FormControl, Heading, HStack, Input, Link, VStack } from 'native-base';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
-import { setEmail, setPassword, setSignedIn, setUID } from '../../redux/action';
-import NetInfo from '@react-native-community/netinfo';
-import firebase from 'firebase/compat/app';
+import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
+import auth from "@react-native-firebase/auth";
+import { Alert } from 'react-native';
+
+GoogleSignin.configure({
+  webClientId: "683728813647-9mav57hd0hj75rdkimd717rrqpf1f5t6.apps.googleusercontent.com",
+});
+
+function GoogleSignIn() {
+  return (
+    <Button
+      title="Google Sign-In"
+      onPress={() => onGoogleButtonPress().then(() => console.log('Signed in with Google!'))}
+    />
+  );
+}
 
 export default function LoginScreen({navigation, route}) {
 
@@ -16,28 +25,10 @@ export default function LoginScreen({navigation, route}) {
 
   const insets = useSafeAreaInsets();
 
-  const signedIn = useSelector(state => state.signedIn);
-  const persistedEmail = useSelector(state => state.email);
-  const persistedPassword = useSelector(state => state.password);
-  const persistedUID = useSelector(state => state.uid);
-
-  const dispatch = useDispatch();
-
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(user => {
+    const unsubscribe = auth().onAuthStateChanged(user => {
       if (user) {
         navigation.replace("Main");
-      }
-    });
-
-    NetInfo.fetch().then(state => {
-      if (signedIn) {
-        if (!state.isConnected && persistedUID !== "") {
-          console.log("Bypassing");
-          navigation.navigate("Main");
-        } else {
-          handleLogin(persistedEmail, persistedPassword);
-        }
       }
     });
 
@@ -46,52 +37,16 @@ export default function LoginScreen({navigation, route}) {
   }, [])
   
   function handleLogin(email = null, password = null) {
-    auth
+    auth()
       .signInWithEmailAndPassword(email?? emailText, password?? passwordText)
       .then(userCredentials => {
         const user = userCredentials.user;
-        console.log("Logged in with", user.email);
-        dispatch(setEmail(email ?? emailText));
-        dispatch(setPassword(password?? passwordText));
-        dispatch(setUID(user.uid));
-
-        //Set timeout here so TodoApp.js can separate manual sign in 
-        //from auto sign in and play the right fade vs slide animation accordingly
-        setTimeout(() => dispatch(setSignedIn(true)), 1000);
-        
+        console.log("Logged in with", user.email);        
       })
       .catch(error => { 
-        alert(error.message);
-        dispatch(setEmail(""));
-        dispatch(setPassword(""));
-        dispatch(setSignedIn(false));
-        dispatch(setUID(""));
+        Alert.alert(error.nativeErrorCode, error.nativeErrorMessage);
       });
   }
-
-  if (signedIn)
-    return (
-      <Center
-        w="100%"
-        h="100%"
-        _dark={{
-          bg: "dark.50"
-        }}
-
-        _light={{
-          bg: "white"
-        }}
-
-        pt={insets.top}
-        pb={insets.bottom + 100}
-        pl={insets.left}
-        pr={insets.right}
-      >
-        <Heading fontSize={35}>
-          EASY TODOS
-        </Heading>
-      </Center>
-    )
 
   return (
     <Center 
@@ -150,6 +105,17 @@ export default function LoginScreen({navigation, route}) {
             >
               Register
             </Button>
+            <GoogleSigninButton 
+              size={1} 
+              style={{
+                marginTop: 5,
+                transform: [
+                  { scaleX: 0.97 },
+                  { scaleY: 1.05 }
+                ]
+              }}
+              onPress={() => onGoogleButtonPress().then(() => console.log("Signed in with google!"))}
+            />
             <Link mt="3" c
               _text={{
                 color: 'green.100'
@@ -161,4 +127,18 @@ export default function LoginScreen({navigation, route}) {
       </Box>
     </Center>
   )
+
+  async function onGoogleButtonPress() {
+    // Check if your device supports Google Play
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    
+    // Get the users ID token
+    const { idToken } = await GoogleSignin.signIn();
+  
+    // Create a Google credential with the token
+    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+  
+    // Sign-in the user with the credential
+    return auth().signInWithCredential(googleCredential);
+  }
 }

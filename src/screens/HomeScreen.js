@@ -33,7 +33,7 @@ export default function HomeScreen({navigation, route}) {
   const [settings, setSettings] = useState(defaultSettings);
 
   const justLaunched = useRef(true); //This is to bypass animations for initial sort
-  const justLaunchedInterval = 1000;
+  const justLaunchedTimeout = 1000;
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editModalItem, setEditModalItem] = useState({
@@ -89,17 +89,21 @@ export default function HomeScreen({navigation, route}) {
           createdAt: data[key].createdAt,
 
           reminder: data[key].reminder ?? "none",
-          customReminder: data[key].customReminder ?? "30 minutes"
+          customReminder: data[key].customReminder ?? "30 minutes",
+          allDay: data[key].allDay
         })
       }
 
       //TODO : Figurer out a better solution than this
       //This is called whenever ANY update is made to ANY
       //Todolist item, and loops through EVERY todo
-      notifee.cancelAllNotifications();
-      for(let i = 0; i < loadedList.length; i++) {
-        setupNotification(loadedList[i]);
+      if (route.params.mode !== 'completed') { //Runs when items are incomplete
+        notifee.cancelAllNotifications();
+        for(let i = 0; i < loadedList.length; i++) {
+          setupNotification(loadedList[i]);
       }
+      }
+      
 
       _setCallbackTodos(loadedList); //Read initialization for notes
     })
@@ -130,7 +134,7 @@ export default function HomeScreen({navigation, route}) {
 
     setTimeout(() => {
       justLaunched.current = false;
-    }, justLaunchedInterval);
+    }, justLaunchedTimeout);
   },[]);
 
   useEffect(() => {
@@ -171,22 +175,44 @@ export default function HomeScreen({navigation, route}) {
   }
 
   function sortTodoComparator(a, b) {
+
+    function compareDueDate() {
+
+      let x = new Date(a.dueDate);
+      x.setHours(0,0,0,0);
+
+      let y = new Date(b.dueDate);
+      y.setHours(0,0,0,0);
+
+      if (a.allDay && b.allDay) { 
+        if (x.getTime() == y.getTime()) //Same day
+          return a.createdAt > b.createdAt;
+        else 
+          return x > y;
+      } else if (a.allDay)
+        return x.getTime() > b.dueDate;
+      else if (b.allDay)
+        return a.dueDate > y.getTime();
+      else 
+        return a.dueDate > b.dueDate;
+    }
+
     function compare() {
       if (settings.sortBy === 'creation date') {
-        return new Date(a.createdAt).getTime() > new Date(b.createdAt).getTime();
+        return a.createdAt > b.createdAt;
       } else if (settings.sortBy === 'due date') {
         if (a.dueDate == null && b.dueDate == null)
-          return new Date(a.createdAt).getTime() > new Date(b.createdAt).getTime();
+          return a.createdAt > b.createdAt;
         else if (a.dueDate == null)
           return true
         else if (b.dueDate == null)
           return false
         else
-          return new Date(a.dueDate).getTime() > new Date(b.dueDate).getTime();
+          return compareDueDate()
       } else if (settings.sortBy === 'title') {
         let res = a.title.localeCompare(b.title, 'en', { sensitivity: 'base' })
         if (res === 0)
-          return new Date(a.createdAt).getTime() > new Date(b.createdAt).getTime();
+          return a.createdAt > b.createdAt;
         return res;
       } else {
         console.warn("settings.sortBy not recognized: " + settings.sortBy);
@@ -205,7 +231,10 @@ export default function HomeScreen({navigation, route}) {
   }
 
   function toggleComplete(item) {
-    dbRef(`/todos/${item.id}`).update({ complete: !item.complete });
+    dbRef(`/todos/${item.id}`).update({ 
+      complete: !item.complete,
+      reminder: 'none'
+    });
   }
 
   function saveEditModalChanges() {
@@ -213,7 +242,8 @@ export default function HomeScreen({navigation, route}) {
       title: editModalItem.title,
       description: editModalItem.description.trim(),
       color: editModalItem.color,
-      dueDate: editModalItem.dueDate
+      dueDate: editModalItem.dueDate,
+      allDay: editModalItem.allDay
     });
   }
 
@@ -281,7 +311,16 @@ export default function HomeScreen({navigation, route}) {
         return;
     }
 
-    const date = new Date(todoItem.dueDate - secondsPrior * 1000);
+    let date;
+
+    if (todoItem.allDay) {
+      let d = new Date(todoItem.dueDate);
+      d.setHours(0,0,0,0);
+      // Set to 12 AM. So eg 1 hour prior notification would notify you at 11PM that tomorrow has something on
+      date = new Date(d.getTime() - secondsPrior * 1000);
+    } else {
+      date = new Date(todoItem.dueDate - secondsPrior * 1000);
+    }
 
     if (date < new Date()) {
       console.log("Reminder is not in the future, aborting");
@@ -321,22 +360,23 @@ export default function HomeScreen({navigation, route}) {
     let weeksGap = Math.round(weekOfTheYear(dueDate) - weekOfTheYear(notifDate));
 
     if (daysGap <= 0) {
-      notifBody = "Today at ";
+      notifBody = "Today";
     } else if (daysGap <= 1) {
-      notifBody = "Tomorrow at ";
+      notifBody = "Tomorrow";
     } else if (weeksGap <= 0) {
-      notifBody = `${dueMoment.format('dddd')} at `;
+      notifBody = `${dueMoment.format('dddd')}`;
     } else if (weeksGap <= 1) {
       if (notifDate.getDay() > 5 || notifDate.getDay() == 0) { // saturday sunday
-        notifBody = `${dueMoment.format('dddd')} at `;
+        notifBody = `${dueMoment.format('dddd')}`;
       } else {
-        notifBody = `Next ${dueMoment.format('dddd')} at `;
+        notifBody = `Next ${dueMoment.format('dddd')}`;
       }
     } else {
-      notifBody = `${dueMoment.format('MMM Do')} at `
+      notifBody = `${dueMoment.format('MMM Do')}`
     }
 
-    notifBody += timeText;
+    if (!todoItem.allDay) 
+      notifBody += ` at ${timeText}`;
 
     console.log(notifBody);
 

@@ -19,11 +19,12 @@ export default function SetReminderModal(props) {
   const [units, setUnits] = useState("minutes");
 
   const justLaunched = useRef(true);
+  const justLaunchedTimeout = 1000;
 
   useEffect(() => {
     setTimeout(() => {
       justLaunched.current = false;
-    }, 1000)
+    }, justLaunchedTimeout)
   }, []);
 
   useEffect(() => {
@@ -64,6 +65,28 @@ export default function SetReminderModal(props) {
         </Modal.Content>
       </Modal>
     )
+  }
+
+  function getNumberOfOptions(u) {
+    let n;
+    switch(u) {
+      case "minutes":
+        n = 60;
+        break;
+      case "hours":
+        n = 24;
+        break;
+      case "days":
+        n = 28;
+        break;
+      case "weeks":
+        n = 4;
+        break;
+      default:
+        console.warn("Units not recognized in getNumberOfOptions(units)");
+        break;
+    }
+    return n;
   }
   
   return (
@@ -135,21 +158,8 @@ export default function SetReminderModal(props) {
                   >
                     {
                       function() {
-                        let n;
-                        switch(units) {
-                          case "minutes":
-                            n = 60;
-                            break;
-                          case "hours":
-                            n = 24;
-                            break;
-                          case "days":
-                            n = 28;
-                            break;
-                          case "weeks":
-                            n = 4;
-                            break;
-                        }
+                        let n = getNumberOfOptions(units);
+                        
                         n++; // 0 indexed
                         let arr = Array.from(Array(n).keys());
                         return (
@@ -166,10 +176,16 @@ export default function SetReminderModal(props) {
                     dropdownIconColor="white"
                     selectedValue={units}
                     onValueChange={u => {
+                      let n = Math.min(parseInt(number, 10), getNumberOfOptions(u))
+                      //This is bad because it doesnt use the prev value to set the new number value
+                      //However the picker is pretty slow so it should be ok
+                      setNumber(n.toString());
+
                       props.setItem(prev => ({
                         ...prev,
-                        customReminder: `${number} ${u}`
+                        customReminder: `${n} ${u}`
                       }));
+
                       setUnits(u);
                     }}
                   >

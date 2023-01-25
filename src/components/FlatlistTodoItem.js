@@ -1,6 +1,6 @@
 import { View, TouchableOpacity, StyleSheet, Alert, Dimensions } from 'react-native'
 import React, { useEffect, useRef } from 'react'
-import { Box, Menu, PresenceTransition, Pressable, Text } from 'native-base';
+import { Box, HStack, Menu, PresenceTransition, Pressable, Text } from 'native-base';
 import { Swipeable, RectButton } from 'react-native-gesture-handler'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { Easing, useAnimatedStyle, useValue, withTiming } from 'react-native-reanimated';
@@ -167,26 +167,26 @@ export default function FlatlistTodoItem(props) {
         onSwipeableOpen={direction => {
           if (direction === 'left') {
             //TODO: Make it an option in settings for confirmation of completion
-            Alert.alert(
-              `Mark todo as ${props.item.complete? "incomplete" : "complete"}?`,
-              "",
-              [
-                {
-                  text: "No",
-                  style: "cancel",
-                  onPress: () => {
-                    close();
-                  }
-                },
-                {
-                  text: "Yes",
-                  style: "default",
-                  onPress: () => {
+            // Alert.alert(
+            //   `Mark todo as ${props.item.complete? "incomplete" : "complete"}?`,
+            //   "",
+            //   [
+            //     {
+            //       text: "No",
+            //       style: "cancel",
+            //       onPress: () => {
+            //         close();
+            //       }
+            //     },
+            //     {
+            //       text: "Yes",
+            //       style: "default",
+            //       onPress: () => {
                     props.toggleComplete();
-                  }
-                }
-              ]
-            );
+            //       }
+            //     }
+            //   ]
+            // );
           }
         }}
         ref={updateRef}
@@ -252,11 +252,6 @@ export default function FlatlistTodoItem(props) {
             {
               props.item.dueDate && 
               <>
-                <Box mb="2">
-                  <Text fontSize="14" color="white">
-                      { moment(new Date(props.item.dueDate)).format('h:mm a') }
-                  </Text>
-                </Box>
                 <Text textAlign="center" fontSize="md" lineHeight={18}>
                   { // The bug was caused by the box above being inside this text component
                     // which for some reason on height changes on the flatlist item caused
@@ -266,39 +261,73 @@ export default function FlatlistTodoItem(props) {
                   {'\n'}
                   { moment(new Date(props.item.dueDate)).format('MMM') }
                 </Text>
+                {
+                  !props.item.allDay &&
+                    <Box mt="2">
+                      <Text fontSize="13" color="white">
+                          { moment(new Date(props.item.dueDate)).format('h:mm a') }
+                      </Text>
+                    </Box>
+                }
               </>
             }
             
           </Box>
           <Box flex={5} py="4" px="4">
+            <HStack justifyContent="space-between">
+              <Text
+                mt="-1"
+                flex={1.2}
+                fontSize={25}
+                bold={true}
+                lineHeight={27}
+                _dark={{
+                  color: "white"
+                }}
+              >
+                {props.item.title}
+              </Text>
+              {
+                function() {
+
+                  if (props.item.pinned || props.item.reminder !== "none")
+                    return (
+                      <HStack flex={1} space={2} flexDir="row-reverse">
+                        {
+                          props.item.pinned &&
+                            <FontAwesomeIcon icon="fa-solid fa-thumbtack" color="white"/>
+                        }
+                        {
+                          props.item.reminder !== "none" && props.item.dueDate != null && 
+                            <HStack space={1.5}>
+                              <Text style={{ marginTop: -3.5 }} color="gray.500" >
+                                {
+                                  props.item.reminder !== "custom"
+                                  ? props.item.reminder 
+                                  : props.item.customReminder.split(' ')[1] === 'minutes'
+                                  ? props.item.customReminder.split(' ')[0] + " mins"
+                                  : props.item.customReminder
+                                }
+                              </Text>
+                              <FontAwesomeIcon icon="fa-solid fa-bell" color="#fbbf24" size={15} style={{ marginTop: -0.5 }}/>
+                            </HStack>
+                        }
+                      </HStack>
+                    )
+                }()
+              }
+            </HStack>
             {
-              function() {
-                return (
-                  props.item.pinned &&
-                    <Box
-                    position="absolute"
-                    right="4"
-                    top="4"
-                    >
-                      <FontAwesomeIcon icon="fa-solid fa-thumbtack" color="white"/>
-                    </Box> 
-                )
-              }()
-              
+              props.item.dueDate != undefined && props.item.dueDate != null &&
+                <Text color="gray.500">
+                  {
+                    props.item.allDay
+                    ? moment(props.item.dueDate).startOf('day').fromNow().capitalize()
+                    : moment(props.item.dueDate).fromNow().capitalize()
+                  }
+                </Text>
             }
-            
             <Text
-              mt="-2" 
-              fontSize={25}
-              bold={true}
-              _dark={{
-                color: "white"
-              }}
-            >
-              {props.item.title}
-            </Text>
-            <Text
-              mt="-1"
               color="dark.500"
             >
               {moment(props.item.createdAt).format('ddd MMM Do, h:mm a')}

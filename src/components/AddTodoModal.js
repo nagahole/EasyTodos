@@ -24,6 +24,7 @@ export default function AddTodoModal(props) {
 
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [allDay, setAllDay] = useState(false);
   
   const insets = useSafeAreaInsets();
 
@@ -150,25 +151,44 @@ export default function AddTodoModal(props) {
                   </>
               }
               
-              <Box alignItems="center" mt="2.5">
-                {
-                  showDatePicker && Platform.OS !== 'android' && (
-                    <HStack space={3}>
-                      <DateTimePicker
-                        themeVariant="dark"
-                        minimumDate={new Date()}
-                        textColor="white"
-                        value={date}
-                        mode={'datetime'}
-                        is24Hour={true}
-                        onChange={(event, selectedDate) => {
-                          setDate(selectedDate);
+              {
+                showDatePicker && (
+                  <VStack alignItems="center" mt="2.5" space={2.5}>
+                    {
+                      Platform.OS === 'ios' && (
+                        <HStack space={3}>
+                          <DateTimePicker
+                            themeVariant="dark"
+                            minimumDate={new Date()}
+                            textColor="white"
+                            value={date}
+                            mode={allDay? 'date' : 'datetime'}
+                            is24Hour={true}
+                            onChange={(event, selectedDate) => {
+                              setDate(selectedDate);
+                            }}
+                          />
+                        </HStack>
+                      )
+                    }
+                    <HStack ml="12" alignItems="center" space={4} alignSelf="center">
+                      <Text fontSize="16">All day</Text>
+                      <Switch
+                        size="md"
+                        colorScheme="lightBlue"
+                        value={allDay}
+                        onToggle={(bool) => {
+                          LayoutAnimation.configureNext({
+                            duration: 100,
+                            update: { type: LayoutAnimation.Types.easeInEaseOut },
+                          });
+                          setAllDay(bool)
                         }}
                       />
                     </HStack>
-                  )
-                }
-              </Box>
+                  </VStack>
+                )
+              }
             </Box>
 
             <DropDownPicker
@@ -187,7 +207,7 @@ export default function AddTodoModal(props) {
               colorScheme="green"
               onPress={() => {
                 if (showDatePicker) {
-                  props.onSubmit(title, description, dropdownValue, date);
+                  props.onSubmit(title, description, dropdownValue, date, allDay);
                 } else {
                   props.onSubmit(title, description, dropdownValue);
                 }

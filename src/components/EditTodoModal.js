@@ -13,6 +13,7 @@ export default function EditTodoModal(props) {
 
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [allDay, setAllDay] = useState(false);
 
   const [dropdownItems, setDropdownItems] = useState(dropdownColorValues);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -29,6 +30,8 @@ export default function EditTodoModal(props) {
       setDate(new Date(props.item.dueDate));
       setShowDatePicker(true);
     }
+
+    setAllDay(props.item.allDay);
   }, [props.isOpen])
 
   const onChange = (event, selectedDate) => {
@@ -154,27 +157,52 @@ export default function EditTodoModal(props) {
                   </>
               }
               
-              <Box alignItems="center" mt="2.5" justifyContent="center">
-                {
-                  showDatePicker && Platform.OS === 'ios' && (
-                    <DateTimePicker
-                      themeVariant="dark"
-                      minimumDate={new Date()}
-                      textColor="white"
-                      value={date}
-                      mode={'datetime'}
-                      is24Hour={true}
-                      onChange={(event, selectedDate) => {
-                        setDate(selectedDate);
-                        props.setItem(prev => ({
-                          ...prev,
-                          dueDate: selectedDate.getTime()
-                        }))
-                      }}
-                    />
-                  )
-                }
-              </Box>
+              
+              {
+                showDatePicker && (
+                  <Box alignItems="center" mt="2.5" justifyContent="center">
+                    {
+                      Platform.OS === 'ios' && (
+                        <DateTimePicker
+                          themeVariant="dark"
+                          minimumDate={new Date()}
+                          textColor="white"
+                          value={date}
+                          mode={allDay? 'date' : 'datetime'}
+                          is24Hour={true}
+                          onChange={(event, selectedDate) => {
+                            setDate(selectedDate);
+                            props.setItem(prev => ({
+                              ...prev,
+                              dueDate: selectedDate.getTime()
+                            }))
+                          }}
+                        />
+                      )
+                    }
+                    <HStack ml="12" alignItems="center" space={4} alignSelf="center">
+                      <Text fontSize="16">All day</Text>
+                      <Switch
+                        size="md"
+                        colorScheme="lightBlue"
+                        value={allDay}
+                        onToggle={(bool) => {
+                          LayoutAnimation.configureNext({
+                            duration: 100,
+                            update: { type: LayoutAnimation.Types.easeInEaseOut },
+                          });
+                          props.setItem(prev => ({
+                            ...prev,
+                            allDay: bool
+                          }));
+                          setAllDay(bool)
+                        }}
+                      />
+                    </HStack>
+                  </Box>
+                )
+              }
+              
             </Box>
 
             <DropDownPicker

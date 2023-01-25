@@ -3,8 +3,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import { firebase as dbFirebase } from '@react-native-firebase/database';
-import { useSelector } from 'react-redux';
-import { store } from './redux/store';
+import auth from "@react-native-firebase/auth";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -32,24 +31,13 @@ if(firebase.apps.length === 0) {
   app = firebase.app();
 }
 
-const auth = firebase.auth();
-const firestore = firebase.firestore();
-
 const databaseURL = "https://easy-todo-ffcb3-default-rtdb.firebaseio.com";
 
-let persistedUID;
-
 const dbRef = (refAddon = "") => {
-  if (persistedUID === "" || persistedUID === undefined) {
-    console.log("Persisted UID is undefined or initial value. Fetching persisted UID again");
-    persistedUID = store.getState().uid;
-  }
-
-  let authUID = auth.currentUser?.uid;
   return dbFirebase
     .app()
     .database(databaseURL)
-    .ref(`/users/${authUID == undefined? persistedUID : authUID}` + refAddon);
+    .ref(`/users/${auth().currentUser.uid}` + refAddon);
 }
 
-export { auth, firestore, firebase, app, databaseURL, dbRef }
+export { databaseURL, dbRef }

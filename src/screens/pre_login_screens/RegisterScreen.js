@@ -1,8 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Box, Button, Center, FormControl, Heading, Input, VStack } from 'native-base'
-import { auth } from '../../firebase';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Constants from 'expo-constants';
+import auth from "@react-native-firebase/auth";
 import { useNavigation } from '@react-navigation/native';
 import { Alert } from 'react-native';
 
@@ -100,20 +98,20 @@ class RegisterScreen extends React.Component {
       if (Object.keys(this.state.errors).length > 0 || hasError)
         return;
 
-      auth
+      auth()
         .createUserWithEmailAndPassword(this.state.email, this.state.password)
         .then(userCredentials => {
           const user = userCredentials.user;
-          auth.currentUser.sendEmailVerification({
+          auth().currentUser.sendEmailVerification({
             handleCodeInApp: true,
             url: "https://easy-todo-ffcb3.firebaseapp.com"
           })
             .then(() => {
               Alert.alert("Email verification sent");
             })
-            .catch(error => alert(error.message));
+            .catch(error => Alert.alert(error.nativeErrorCode, error.nativeErrorMessage));
         })
-        .catch(error => alert(error.message));
+        .catch(error => Alert.alert(error.nativeErrorCode, error.nativeErrorMessage));
     })
   }
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Box, Button, Center, FormControl, Heading, Input, VStack } from 'native-base'
-import { auth } from '../../firebase'
+import auth from "@react-native-firebase/auth";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
@@ -25,7 +25,7 @@ class EditEmailScreen extends React.Component {
 
   handleEditEmail = () => {
 
-    if (auth.currentUser == null) {
+    if (auth().currentUser == null) {
       Alert.alert("Please reauthenticate to use this feature (this is likely an issue of not having a stable internet connection)");
       return null;
     }
@@ -49,13 +49,10 @@ class EditEmailScreen extends React.Component {
         .reauthenticate(this.state.currentPassword)
         .then(() => {
           // Current password is correct
-          auth.currentUser
+          auth().currentUser
             .updateEmail(this.state.newEmail)
             .then(() => {
-              // Email successfully updated
-              this.props.dispatch(setEmail(this.state.newEmail));
-
-              auth.currentUser.sendEmailVerification()
+              auth().currentUser.sendEmailVerification()
                 .then(() => {
                   this.setState({
                     currentPassword: "",
@@ -64,31 +61,19 @@ class EditEmailScreen extends React.Component {
                   this.props.navigation.goBack();
                   Alert.alert("Email updated and verification sent");
                 })
-                .catch((error) => {Alert.alert(error.message )})
-
-              
+                .catch((error) => {Alert.alert(error.nativeErrorCode, error.nativeErrorMessage )})
             })
-            .catch((error) => { Alert.alert(error.message) });
+            .catch((error) => { Alert.alert(error.nativeErrorCode, error.nativeErrorMessage) });
         })
         .catch((error) => { 
-          if (error.code === 'auth/wrong-password') {
-            //Don't need to account for previous password errors since up to this point
-            //there will have been no password errors
-
-            //Will need to update if somehow there can be an error up to here
-            this.setState(prev => ({
-              errors: { ...prev.errors, currentPassword: "Wrong password" }
-            }));
-            return;
-          }
-          Alert.alert(error.message);
+          Alert.alert(error.nativeErrorCode, error.nativeErrorMessage);
         });
     })
   }
 
   reauthenticate = (currentPassword) => {
-    var user = auth.currentUser;
-    var cred = firebase.auth.EmailAuthProvider.credential(
+    var user = auth().currentUser;
+    var cred = auth.EmailAuthProvider.credential(
         user.email, currentPassword);
     return user.reauthenticateWithCredential(cred);
   }
@@ -157,7 +142,7 @@ class EditEmailScreen extends React.Component {
 export function WithNavigation(props) {
   const navigation = useNavigation();
 
-  return <EditEmailScreen navigation={navigation} dispatch={props.dispatch} />
+  return <EditEmailScreen navigation={navigation}/>
 }
 
 export default connect()(WithNavigation);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Box, Button, Center, FormControl, Heading, Input, VStack } from 'native-base'
-import { auth } from '../../firebase'
+import auth from "@react-native-firebase/auth";
 import { useNavigation } from '@react-navigation/native';
 import { Alert } from 'react-native';
 import { checkPasswordErrors } from '../pre_login_screens/RegisterScreen';
@@ -24,7 +24,7 @@ class ChangePasswordScreen extends React.Component {
 
   handleResetPassword = () => {
 
-    if (auth.currentUser == null) {
+    if (auth().currentUser == null) {
       Alert.alert("Please reauthenticate to use this feature (this is likely an issue of not having a stable internet connection)");
       return null;
     }
@@ -65,12 +65,9 @@ class ChangePasswordScreen extends React.Component {
             }));
             return;
           }
-          auth.currentUser
+          auth().currentUser
             .updatePassword(this.state.newPassword)
             .then(() => {
-              // Password successfully updated
-              this.props.dispatch(setPassword(this.state.newPassword));
-
               this.props.navigation.goBack();
 
               this.setState({
@@ -81,7 +78,7 @@ class ChangePasswordScreen extends React.Component {
 
               Alert.alert("Password updated");
             })
-            .catch((error) => { Alert.alert(error.message) });
+            .catch((error) => { Alert.alert(error.nativeErrorCode, error.nativeErrorMessage) });
         })
         .catch((error) => { 
           if (error.code === 'auth/wrong-password') {
@@ -100,8 +97,8 @@ class ChangePasswordScreen extends React.Component {
   }
 
   reauthenticate = (currentPassword) => {
-    var user = auth.currentUser;
-    var cred = firebase.auth.EmailAuthProvider.credential(
+    var user = auth().currentUser;
+    var cred = auth.EmailAuthProvider.credential(
         user.email, currentPassword);
     return user.reauthenticateWithCredential(cred);
   }
@@ -208,7 +205,7 @@ class ChangePasswordScreen extends React.Component {
 export function WithNavigation(props) {
   const navigation = useNavigation();
 
-  return <ChangePasswordScreen navigation={navigation} dispatch={props.dispatch} />
+  return <ChangePasswordScreen navigation={navigation}/>
 }
 
 export default connect()(WithNavigation);
