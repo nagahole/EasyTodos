@@ -2,9 +2,9 @@ import { TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { Box, Circle, HStack, ScrollView, VStack, Text, Button, Switch, useColorMode } from 'native-base'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { auth } from '../firebase';
+import { auth } from '../../firebase';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import SettingsTextItem from '../components/SettingsTextItem';
+import SettingsTextItem from '../../components/SettingsTextItem';
 
 
 export default function SettingsScreen({navigation, route}) {

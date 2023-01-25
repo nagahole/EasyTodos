@@ -35,7 +35,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.nagahole.EasyTodos"
     },
     "web": {
       "favicon": "./assets/favicon.png"

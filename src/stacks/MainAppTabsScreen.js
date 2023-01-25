@@ -36,8 +36,9 @@ function MyTabBar({ state, descriptors, navigation }) {
         flexDirection: 'row',
         backgroundColor: colorMode === 'dark'? "#1a1a1a" : "white",
         paddingBottom: insets.bottom,
-        height: insets.bottom + 50,
+        height: insets.bottom + 65,
         paddingTop: 10,
+        paddingBottom: insets.bottom + 10,
         alignItems: 'center',
         justifyContent: 'space-around'
       }}
@@ -141,7 +142,7 @@ function MyTabBar({ state, descriptors, navigation }) {
                 size="16"
                 bg="green.500"
                 p="0"
-                mt="-3.5"
+                mt="-4"
                 justifyContent="center"
                 alignItems="center"
                 borderRadius="3xl"

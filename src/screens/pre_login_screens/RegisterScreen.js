@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Box, Button, Center, FormControl, Heading, Input, VStack } from 'native-base'
-import { auth } from '../firebase';
+import { auth } from '../../firebase';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';

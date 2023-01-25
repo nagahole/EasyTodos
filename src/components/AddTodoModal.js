@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { Box, Button, FormControl, Heading, HStack, Input, Modal, Switch, Text, VStack } from 'native-base'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import DropDownPicker from 'react-native-dropdown-picker';
+import { LayoutAnimation, Platform } from 'react-native';
+import moment from 'moment';
 
 export const dropdownColorValues = [
   {label: 'Red', value: 'red', icon: () => <FontAwesomeIcon icon="fa-solid fa-circle" color="#ef4444"/>},
@@ -29,6 +31,25 @@ export default function AddTodoModal(props) {
   const [dropdownValue, setDropdownValue] = useState("green");
   const [dropdownItems, setDropdownItems] = useState(dropdownColorValues);
 
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate;
+    props.setItem(prev => ({
+      ...prev,
+      dueDate: selectedDate.getTime()
+    }))
+    setDate(currentDate);
+  };
+
+  const showMode = (currentMode) => {
+    DateTimePickerAndroid.open({
+      minimumDate: new Date(),
+      value: date,
+      onChange,
+      mode: currentMode,
+      is24Hour: true,
+    });
+  };
+
   return (
     <Modal
       isOpen={props.isOpen}
@@ -37,7 +58,7 @@ export default function AddTodoModal(props) {
       display="flex"
       justifyContent="flex-end"
     >
-      <Modal.Content w="95%" h="60%" maxH={insets.bottom + 400} bg="dark.100" shadow="9" style={{
+      <Modal.Content w="95%"  bg="dark.100" shadow="9" style={{
         paddingBottom: insets.bottom,
       }}> 
         <Modal.Body>
@@ -91,32 +112,54 @@ export default function AddTodoModal(props) {
                   colorScheme="lightBlue"
                   value={showDatePicker}
                   onToggle={(bool) => {
+                    LayoutAnimation.configureNext({
+                      duration: 100,
+                      update: { type: LayoutAnimation.Types.easeInEaseOut },
+                    });
                     setShowDatePicker(bool)
                   }}
                 />
               </HStack>
+
+              {
+                showDatePicker && Platform.OS === 'android' &&
+                  <>
+                    <Box mt="2" w='48' borderRadius="10" bg="dark.50:alpha.60" pt="1" pb="1.5" alignSelf="center">
+                      <Text color="gray.400" textAlign="center" fontSize="16">
+                        { moment(date).format('MMM Do, h:mm a') }
+                      </Text>
+                    </Box>
+                    <HStack alignItems="center" space={4} alignSelf="center" mt="3">
+                      <Button
+                        colorScheme="lightBlue"
+                        onPress={() => {
+                          showMode('date');
+                        }}
+                      >
+                        Set date
+                      </Button>
+                      <Button
+                        colorScheme="lightBlue"
+                        onPress={() => {
+                          showMode('time');
+                        }}
+                      >
+                        Set time
+                      </Button>
+                    </HStack>
+                  </>
+              }
               
               <Box alignItems="center" mt="2.5">
                 {
-                  showDatePicker && (
+                  showDatePicker && Platform.OS !== 'android' && (
                     <HStack space={3}>
                       <DateTimePicker
                         themeVariant="dark"
                         minimumDate={new Date()}
                         textColor="white"
                         value={date}
-                        mode={'date'}
-                        is24Hour={true}
-                        onChange={(event, selectedDate) => {
-                          setDate(selectedDate);
-                        }}
-                      />
-                      <DateTimePicker
-                        themeVariant="dark"
-                        minimumDate={new Date()}
-                        textColor="white"
-                        value={date}
-                        mode={'time'}
+                        mode={'datetime'}
                         is24Hour={true}
                         onChange={(event, selectedDate) => {
                           setDate(selectedDate);

@@ -2,7 +2,7 @@ import { View, Text } from 'react-native'
 import React, { useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Box, Button, Center, FormControl, Heading, Input, VStack } from 'native-base';
-import { auth } from '../firebase';
+import { auth } from '../../firebase';
 
 export default function ForgotPasswordScreen({navigation, route}) {
 

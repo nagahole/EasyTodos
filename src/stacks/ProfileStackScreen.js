@@ -1,7 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ProfileScreen from "../screens/ProfileScreen";
-import SettingsScreen from "../screens/SettingsScreen.js";
+import SettingsScreen from "../screens/settings_screens/SettingsScreen.js";
 import AccountScreen from "../screens/settings_screens/AccountScreen";
 import AboutScreen from "../screens/settings_screens/AboutScreen";
 import ChangePasswordScreen from "../screens/settings_screens/ChangePasswordScreen";

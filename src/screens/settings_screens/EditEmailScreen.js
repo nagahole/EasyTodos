@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
 import { Alert } from 'react-native';
-import { emailHasErrors } from '../RegisterScreen';
+import { emailHasErrors } from '../pre_login_screens/RegisterScreen';
 import { firebase } from '../../firebase';
 import { connect } from 'react-redux';
 import { setEmail, setPassword } from '../../redux/action';

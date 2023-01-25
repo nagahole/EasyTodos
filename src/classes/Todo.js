@@ -7,5 +7,8 @@ export default class Todo {
     this.pinned = false;
     this.complete = false;
     this.createdAt = Date.now();
+
+    this.reminder = "none";
+    this.customReminder = "30 minutes";
   }
 }

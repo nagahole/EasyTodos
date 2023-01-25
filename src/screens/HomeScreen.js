@@ -1,20 +1,17 @@
-import { AspectRatio, Box, Button, FlatList, HStack, Icon, IconButton, Image, Input, Menu, Modal, Pressable, ScrollView, Text, View, VStack } from "native-base";
-import { auth, databaseURL, firestore } from "../firebase";
+import { Box, Button, FlatList, HStack, Menu, Pressable, Text, View, VStack } from "native-base";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCallback, useEffect } from "react";
-import { firebase } from '@react-native-firebase/database';
-import Todo from '../classes/Todo';
 import { useState } from "react";
-import { Feather } from '@expo/vector-icons';
-import { LayoutAnimation, TouchableOpacity } from "react-native";
+import { LayoutAnimation } from "react-native";
 import FlatlistTodoItem from "../components/FlatlistTodoItem";
-import AddTodoModal from "../components/AddTodoModal";
 import EditTodoModal from "../components/EditTodoModal";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useRef } from "react";
 import { useSharedValue } from "react-native-reanimated";
-import { ViewToken } from "react-native";
 import { dbRef } from "../firebase";
+import SetReminderModal from "../components/SetReminderModal";
+import notifee, { TriggerType } from '@notifee/react-native';
+import moment from "moment";
 
 //TODO: Move this into a util folder
 
@@ -35,14 +32,29 @@ export default function HomeScreen({navigation, route}) {
 
   const [settings, setSettings] = useState(defaultSettings);
 
-  const didMount = useRef(false);
+  const justLaunched = useRef(true); //This is to bypass animations for initial sort
+  const justLaunchedInterval = 1000;
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalItem, setModalItem] = useState({
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editModalItem, setEditModalItem] = useState({
     id: -1,
     title: '',
     description: '',
-    dueDate: new Date()
+    dueDate: new Date(),
+
+    reminder: "none",
+    customReminder: "30 minutes"
+  });
+
+  const [reminderModalOpen, setReminderModalOpen] = useState(false);
+  const [reminderModalItem, setReminderModalItem] = useState({
+    id: -1,
+    title: '',
+    description: '',
+    dueDate: new Date(),
+
+    reminder: "none",
+    customReminder: "30 minutes"
   });
 
   const [_callbackTodos, _setCallbackTodos ] = useState([]);
@@ -75,18 +87,19 @@ export default function HomeScreen({navigation, route}) {
           pinned: data[key].pinned?? false,
           complete: data[key].complete,
           createdAt: data[key].createdAt,
+
+          reminder: data[key].reminder ?? "none",
+          customReminder: data[key].customReminder ?? "30 minutes"
         })
       }
 
-      LayoutAnimation.configureNext({
-        duration: 300,
-        update: { type: LayoutAnimation.Types.easeInEaseOut },
-        delete: {
-          duration: 150,
-          type: LayoutAnimation.Types.easeInEaseOut,
-          property: LayoutAnimation.Properties.opacity,
-        },
-      });
+      //TODO : Figurer out a better solution than this
+      //This is called whenever ANY update is made to ANY
+      //Todolist item, and loops through EVERY todo
+      notifee.cancelAllNotifications();
+      for(let i = 0; i < loadedList.length; i++) {
+        setupNotification(loadedList[i]);
+      }
 
       _setCallbackTodos(loadedList); //Read initialization for notes
     })
@@ -109,29 +122,43 @@ export default function HomeScreen({navigation, route}) {
   }, [dbRef(), settings]);
 
   useEffect(() => {
-    if (!didMount.current) {
-      didMount.current = true;
-      return;
-    }
-
     sortTodos();
   }, [settings.sortBy])
 
   useEffect(() => {
     readData();
+
+    setTimeout(() => {
+      justLaunched.current = false;
+    }, justLaunchedInterval);
   },[]);
 
   useEffect(() => {
+    console.log("Callback");
+    if (!justLaunched.current) {
+      console.log('configuring animation');
+      LayoutAnimation.configureNext({
+        duration: 300,
+        update: { type: LayoutAnimation.Types.easeInEaseOut },
+        delete: {
+          duration: 150,
+          type: LayoutAnimation.Types.easeInEaseOut,
+          property: LayoutAnimation.Properties.opacity,
+        },
+      });
+    }
     setTodos(_callbackTodos.sort(sortTodoComparator));
   }, [_callbackTodos])
 
   function sortTodos() {
-    LayoutAnimation.configureNext({
-      duration: 300,
+    if (!justLaunched.current) {
+      LayoutAnimation.configureNext({
+        update: { duration: 300, type: LayoutAnimation.Types.easeInEaseOut },
+      });
+    }
 
-      update: { type: LayoutAnimation.Types.easeInEaseOut },
-    });
-
+    console.log("Sorting todos");
+    
     setTodos(prev => { 
       /*
         I have to use a deep copy here that gets returned to Todos because apparently react
@@ -159,7 +186,7 @@ export default function HomeScreen({navigation, route}) {
         else if (b.dueDate == null)
           return false
         else
-          return new Date(a.dueDate).getTime() < new Date(b.dueDate).getTime();
+          return new Date(a.dueDate).getTime() > new Date(b.dueDate).getTime();
       } else if (settings.sortBy === 'title') {
         let res = a.title.localeCompare(b.title, 'en', { sensitivity: 'base' })
         if (res === 0)
@@ -182,16 +209,163 @@ export default function HomeScreen({navigation, route}) {
   }
 
   function toggleComplete(item) {
-
     dbRef(`/todos/${item.id}`).update({ complete: !item.complete });
   }
 
-  function saveModalChanges() {
-    dbRef(`/todos/${modalItem.id}`).update({
-      title: modalItem.title,
-      description: modalItem.description.trim(),
-      color: modalItem.color,
-      dueDate: modalItem.dueDate
+  function saveEditModalChanges() {
+    dbRef(`/todos/${editModalItem.id}`).update({
+      title: editModalItem.title,
+      description: editModalItem.description.trim(),
+      color: editModalItem.color,
+      dueDate: editModalItem.dueDate
+    });
+  }
+
+  async function setupNotification(todoItem) {
+    if (todoItem.dueDate == null || todoItem.dueDate == undefined) {
+      console.log("No due date - returning");
+      return;
+    }
+
+    // Request permissions (required for iOS)
+    await notifee.requestPermission()
+
+    // Create a channel (required for Android)
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+
+    let secondsPrior;
+
+    switch (todoItem.reminder) {
+      case "none":
+        return;
+      case "10 minutes":
+        secondsPrior = 60 * 10;
+        break;
+      case "30 minutes":
+        secondsPrior = 60 * 30;
+        break;
+      case "1 hour":
+        secondsPrior = 60 * 60;
+        break;
+      case "1 day":
+        secondsPrior = 60 * 60 * 24;
+        break;
+      case "1 week":
+        secondsPrior = 60 * 60 * 24 * 7;
+        break;
+      case "custom":
+        let arr = todoItem.customReminder.split(' ');
+        let multiplier;
+        switch (arr[1]) { //unit
+          case "minutes":
+            multiplier = 60;
+            break;
+          case "hours":
+            multiplier = 60 * 60;
+            break;
+          case "days":
+            multiplier = 60 * 60 * 24;
+            break;
+          case "weeks":
+            multiplier = 60 * 60 * 24 * 7;
+            break;
+          default:
+            console.warn("Todo item custom reminder unit not set or unrecognized");
+            return;
+        }
+
+        secondsPrior = parseInt(arr[0]) * multiplier;
+
+        break;
+      default:
+        console.warn("Todo item reminder not set or unrecognized");
+        return;
+    }
+
+    const date = new Date(todoItem.dueDate - secondsPrior * 1000);
+
+    if (date < new Date()) {
+      console.log("Reminder is not in the future, aborting");
+      return;
+    }
+
+    // Create a time-based trigger
+    const trigger = {
+      type: TriggerType.TIMESTAMP,
+      timestamp: date.getTime(), // fire at 11:10am (10 minutes before meeting)
+    };
+
+    function weekOfTheYear(d) {
+      // Copy date so don't modify original
+      d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      // Set to nearest Thursday: current date + 4 - current day number
+      // Make Sunday's day number 7
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+      // Get first day of year
+      var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+      // Calculate full weeks to nearest Thursday
+      var weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+      // Return array of year and week number
+      return weekNo;
+    }
+
+    let notifBody;
+    let dueDate = new Date(todoItem.dueDate);
+    let notifDate = date;
+    let dueMoment = moment(dueDate);
+    let timeText = dueMoment.format("h:mm a");
+
+    dueDate.setHours(0, 0, 0, 0);
+    notifDate.setHours(0, 0, 0, 0);
+
+    let daysGap = Math.round(new Date(dueDate - notifDate).getTime() / (60 * 60 * 24 * 1000));
+    let weeksGap = Math.round(weekOfTheYear(dueDate) - weekOfTheYear(notifDate));
+
+    if (daysGap <= 0) {
+      notifBody = "Today at ";
+    } else if (daysGap <= 1) {
+      notifBody = "Tomorrow at ";
+    } else if (weeksGap <= 0) {
+      notifBody = `${dueMoment.format('dddd')} at `;
+    } else if (weeksGap <= 1) {
+      if (notifDate.getDay() > 5 || notifDate.getDay() == 0) { // saturday sunday
+        notifBody = `${dueMoment.format('dddd')} at `;
+      } else {
+        notifBody = `Next ${dueMoment.format('dddd')} at `;
+      }
+    } else {
+      notifBody = `${dueMoment.format('MMM Do')} at `
+    }
+
+    notifBody += timeText;
+
+    console.log(notifBody);
+
+    // Create a trigger notification
+    await notifee.createTriggerNotification(
+      {
+        title: `Reminder for ${todoItem.title}`,
+        body: notifBody,
+        android: {
+          channelId,
+          // pressAction is needed if you want the notification to open the app when pressed
+          pressAction: {
+            id: 'default',
+          },
+        },
+      },
+      trigger,
+    );
+  }
+
+  function saveReminderModalChanges() {
+
+    dbRef(`/todos/${reminderModalItem.id}`).update({
+      reminder: reminderModalItem.reminder,
+      customReminder: reminderModalItem.customReminder
     });
   }
 
@@ -265,14 +439,6 @@ export default function HomeScreen({navigation, route}) {
                   <Text fontSize="16">Title</Text>
                 </Menu.Item>
                 {/* Cannot be bothered sorting by color */}
-                {/* <Menu.Item h="12" justifyContent="center" value="color" onPress={() => {
-                  dbref('/settings')
-                    .update({
-                      sortBy: 'color'
-                    })
-                }}>
-                  <Text fontSize="16">Color</Text>
-                </Menu.Item> */}
               </Menu.Group>
             </Menu>
           </HStack>
@@ -308,11 +474,18 @@ export default function HomeScreen({navigation, route}) {
       pr={insets.right}
     >
       <EditTodoModal
-        isOpen={modalOpen}
-        setOpen={setModalOpen}
-        item={modalItem}
-        setItem={setModalItem}
-        saveChanges={saveModalChanges}
+        isOpen={editModalOpen}
+        setOpen={setEditModalOpen}
+        item={editModalItem}
+        setItem={setEditModalItem}
+        saveChanges={saveEditModalChanges}
+      />
+      <SetReminderModal
+        isOpen={reminderModalOpen}
+        setOpen={setReminderModalOpen}
+        item={reminderModalItem}
+        setItem={setReminderModalItem}
+        saveChanges={saveReminderModalChanges}
       />
       <FlatList
         flex={1}
@@ -322,9 +495,11 @@ export default function HomeScreen({navigation, route}) {
         onViewableItemsChanged={onViewCallBack}
         renderItem={({item}) => 
           <FlatlistTodoItem
+            setReminderModalItem={setReminderModalItem}
+            setReminderModalOpen={setReminderModalOpen}
             viewableItems={viewableItems}
-            setModalItem={setModalItem}
-            setModalOpen={setModalOpen}
+            setModalItem={setEditModalItem}
+            setModalOpen={setEditModalOpen}
             pinItem={() => pinItem(item)}
             unpinItem={() => unpinItem(item)}
             item={item}

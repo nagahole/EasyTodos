@@ -1,11 +1,12 @@
 import { View, TouchableOpacity, StyleSheet, Alert, Dimensions } from 'react-native'
-import React, { useEffect } from 'react'
-import { Box, PresenceTransition, Pressable, Text } from 'native-base';
+import React, { useEffect, useRef } from 'react'
+import { Box, Menu, PresenceTransition, Pressable, Text } from 'native-base';
 import { Swipeable, RectButton } from 'react-native-gesture-handler'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { Easing, useAnimatedStyle, useValue, withTiming } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
 import { useState } from 'react';
+import moment from 'moment';
 
 export default function FlatlistTodoItem(props) {
 
@@ -28,14 +29,76 @@ export default function FlatlistTodoItem(props) {
   };
 
   const renderRightAction = (iconName, color, x, progress, callback) => {
-    const trans = progress.interpolate({
-      inputRange: [0, 1],
-      outputRange: [x, 0],
-    });
     const pressHandler = () => {
-      close();
       callback();
+      close();
     };
+
+    if (iconName === "fa-solid fa-bars") //Probably shouldn't use fucking strings for thins like this
+      return (
+        <Animated.View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', transform: [{ translateX: 0 }],  }}>
+          <Menu 
+            trigger={ triggerProps => {
+              return (
+                <Pressable  
+                  w="100%" 
+                  h="100%" 
+                  accessibilityLabel="More options menu" 
+                  {...triggerProps}
+                >
+                  {
+                    ({ isPressed }) => {
+                      return ( 
+                        <Box 
+                          flex={1}
+                          bg={isPressed ? "rgba(0,0,0,0.1)" : color} 
+                          alignItems="center"
+                          justifyContent="center"
+                        >
+                          <FontAwesomeIcon icon={iconName} color="white" size={20}/>
+                        </Box> 
+                      )
+                    }
+                  }
+                </Pressable>
+              )
+            }}
+          >
+            <Menu.Item h="12" justifyContent="center" onPress={() => {
+              Alert.alert(
+                "Are you sure you want to delete this todo?",
+                "This cannot be undone",
+                [
+                  {
+                    text: "Cancel",
+                    style: "cancel"
+                  },
+                  {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: () => {
+                      close();
+                      props.deleteTodo();
+                    }
+                  }
+                ]
+              )
+            }}>
+              <Text fontSize={16}>Delete</Text>
+            </Menu.Item>
+            <Menu.Item h="12" justifyContent="center" onPress={() => {
+              close();
+              props.setReminderModalItem(props.item);
+              setTimeout(() => {
+                props.setReminderModalOpen(true);
+              }, 50);
+            }}>
+              <Text fontSize={16}>Set reminder</Text>
+            </Menu.Item>
+          </Menu>
+        </Animated.View>
+      )
+
     return (
       <Animated.View style={{ flex: 1, transform: [{ translateX: 0 }],  }}>
         <RectButton
@@ -57,7 +120,9 @@ export default function FlatlistTodoItem(props) {
     <View style={{ width: 220, flexDirection: 'row', marginRight: 10, marginLeft: -10 }}>
       {renderRightAction("fa-solid fa-pencil", '#27272a', 192, progress, () => {
         props.setModalItem(props.item);
-        props.setModalOpen(true);
+        setTimeout(() => {
+          props.setModalOpen(true);
+        }, 50);
       } )}
       {renderRightAction("fa-solid fa-thumbtack", '#27272a', 128, progress, () => {
         if(props.item.pinned) {
@@ -67,25 +132,7 @@ export default function FlatlistTodoItem(props) {
         }
         
       } )}
-      {renderRightAction("fa-solid fa-trash", '#27272a', 64, progress, () => {
-        Alert.alert(
-          "Are you sure you want to delete this todo?",
-          "This cannot be undone",
-          [
-            {
-              text: "Cancel",
-              style: "cancel"
-            },
-            {
-              text: "Delete",
-              style: "destructive",
-              onPress: () => {
-                props.deleteTodo();
-              }
-            }
-          ]
-        )
-      } )}
+      {renderRightAction("fa-solid fa-bars", '#27272a', 64, progress)}
     </View>
   );
 
@@ -207,10 +254,7 @@ export default function FlatlistTodoItem(props) {
               <>
                 <Box mb="2">
                   <Text fontSize="14" color="white">
-                      {new Date(props.item.dueDate).toLocaleTimeString(undefined, {
-                        hour: 'numeric',
-                        minute: '2-digit'
-                      })}
+                      { moment(new Date(props.item.dueDate)).format('h:mm a') }
                   </Text>
                 </Box>
                 <Text textAlign="center" fontSize="md" lineHeight={18}>
@@ -218,13 +262,9 @@ export default function FlatlistTodoItem(props) {
                     // which for some reason on height changes on the flatlist item caused
                     // endless growing of the item. The descriptiontext wasn't the issue: it
                     // just aggravated it whenever it changed the height of the list item
-                    new Date(props.item.dueDate).toLocaleDateString(undefined, {
-                      day: 'numeric',
-                    })}
+                    moment(new Date(props.item.dueDate)).format('Do') }
                   {'\n'}
-                  { new Date(props.item.dueDate).toLocaleDateString(undefined, {
-                      month: 'short'
-                    })}
+                  { moment(new Date(props.item.dueDate)).format('MMM') }
                 </Text>
               </>
             }
@@ -232,14 +272,19 @@ export default function FlatlistTodoItem(props) {
           </Box>
           <Box flex={5} py="4" px="4">
             {
-              props.item.pinned &&
-                <Box
-                position="absolute"
-                right="4"
-                top="4"
-                >
-                  <FontAwesomeIcon icon="fa-solid fa-thumbtack" color="white"/>
-                </Box> 
+              function() {
+                return (
+                  props.item.pinned &&
+                    <Box
+                    position="absolute"
+                    right="4"
+                    top="4"
+                    >
+                      <FontAwesomeIcon icon="fa-solid fa-thumbtack" color="white"/>
+                    </Box> 
+                )
+              }()
+              
             }
             
             <Text
@@ -256,10 +301,7 @@ export default function FlatlistTodoItem(props) {
               mt="-1"
               color="dark.500"
             >
-              {new Date(props.item.createdAt).toLocaleDateString( undefined, {
-                hour: 'numeric',
-                minute: '2-digit'
-              })}
+              {moment(props.item.createdAt).format('ddd MMM Do, h:mm a')}
             </Text>
 
             {

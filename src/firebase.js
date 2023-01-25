@@ -46,7 +46,6 @@ const dbRef = (refAddon = "") => {
   }
 
   let authUID = auth.currentUser?.uid;
-  console.log("Accessing uid", + authUID == undefined? persistedUID : authUID);
   return dbFirebase
     .app()
     .database(databaseURL)

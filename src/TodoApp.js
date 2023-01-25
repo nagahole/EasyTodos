@@ -3,9 +3,9 @@ import { View, Text, StatusBar } from 'react-native'
 import React from 'react'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
-import RegisterScreen from './screens/RegisterScreen';
-import LoginScreen from './screens/LoginScreen';
-import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
+import RegisterScreen from './screens/pre_login_screens/RegisterScreen';
+import LoginScreen from './screens/pre_login_screens/LoginScreen';
+import ForgotPasswordScreen from './screens/pre_login_screens/ForgotPasswordScreen';
 import MainApp from './stacks/MainAppTabsScreen';
 import { useColorMode } from 'native-base';
 import { library } from '@fortawesome/fontawesome-svg-core'

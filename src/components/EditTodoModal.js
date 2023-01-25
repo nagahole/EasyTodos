@@ -1,11 +1,13 @@
 import React from 'react'
-import { Box, HStack, Input, Modal, Switch, Text, VStack } from 'native-base';
+import { Box, Button, HStack, Input, Modal, Switch, Text, VStack } from 'native-base';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { dropdownColorValues } from './AddTodoModal';
 import { useState } from 'react';
 import { useEffect } from 'react';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Dimensions, LayoutAnimation, Platform } from 'react-native';
+import moment from 'moment';
 
 export default function EditTodoModal(props) {
 
@@ -28,6 +30,25 @@ export default function EditTodoModal(props) {
       setShowDatePicker(true);
     }
   }, [props.isOpen])
+
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate;
+    props.setItem(prev => ({
+      ...prev,
+      dueDate: selectedDate.getTime()
+    }))
+    setDate(currentDate);
+  };
+
+  const showMode = (currentMode) => {
+    DateTimePickerAndroid.open({
+      minimumDate: new Date(),
+      value: date,
+      onChange,
+      mode: currentMode,
+      is24Hour: true,
+    });
+  };
   
 
   return (
@@ -45,7 +66,7 @@ export default function EditTodoModal(props) {
       }}
       animationPreset="fade"
       style={{
-        paddingBottom: insets.bottom + 100
+        paddingBottom: insets.bottom + Dimensions.get('window').height * 0.1
       }}
     >
       <Modal.Content overflow="visible" borderRadius="10">
@@ -83,9 +104,7 @@ export default function EditTodoModal(props) {
 
             <Box>
               <HStack alignItems="center" space={4} alignSelf="center">
-                <Text
-                  fontSize="16"
-                >
+                <Text fontSize="16">
                   Has due date
                 </Text>
                 <Switch
@@ -93,6 +112,10 @@ export default function EditTodoModal(props) {
                   colorScheme="lightBlue"
                   value={showDatePicker}
                   onToggle={(bool) => {
+                    LayoutAnimation.configureNext({
+                      duration: 100,
+                      update: { type: LayoutAnimation.Types.easeInEaseOut },
+                    });
                     setShowDatePicker(bool);
                     props.setItem(prev => ({
                       ...prev,
@@ -100,43 +123,55 @@ export default function EditTodoModal(props) {
                     }));
                   }}
                 />
+                
               </HStack>
-              
-              <Box alignItems="center" mt="2.5">
-                {
-                  showDatePicker && (
-                    <HStack space={3}>
-                      <DateTimePicker
-                        themeVariant="dark"
-                        minimumDate={new Date()}
-                        textColor="white"
-                        value={date}
-                        mode={'date'}
-                        is24Hour={true}
-                        onChange={(event, selectedDate) => {
-                          setDate(selectedDate);
-                          props.setItem(prev => ({
-                            ...prev,
-                            dueDate: selectedDate.getTime()
-                          }))
+              {
+                showDatePicker && Platform.OS === 'android' &&
+                  <>
+                    <Box mt="2" w='48' borderRadius="10" bg="dark.50:alpha.60" pt="1" pb="1.5" alignSelf="center">
+                      <Text color="gray.400" textAlign="center" fontSize="16">
+                        { moment(date).format('MMM Do, h:mm a') }
+                      </Text>
+                    </Box>
+                    <HStack alignItems="center" space={4} alignSelf="center" mt="3">
+                      <Button
+                        colorScheme="lightBlue"
+                        onPress={() => {
+                          showMode('date');
                         }}
-                      />
-                      <DateTimePicker
-                        themeVariant="dark"
-                        minimumDate={new Date()}
-                        textColor="white"
-                        value={date}
-                        mode={'time'}
-                        is24Hour={true}
-                        onChange={(event, selectedDate) => {
-                          setDate(selectedDate);
-                          props.setItem(prev => ({
-                            ...prev,
-                            dueDate: selectedDate.getTime()
-                          }))
+                      >
+                        Set date
+                      </Button>
+                      <Button
+                        colorScheme="lightBlue"
+                        onPress={() => {
+                          showMode('time');
                         }}
-                      />
+                      >
+                        Set time
+                      </Button>
                     </HStack>
+                  </>
+              }
+              
+              <Box alignItems="center" mt="2.5" justifyContent="center">
+                {
+                  showDatePicker && Platform.OS === 'ios' && (
+                    <DateTimePicker
+                      themeVariant="dark"
+                      minimumDate={new Date()}
+                      textColor="white"
+                      value={date}
+                      mode={'datetime'}
+                      is24Hour={true}
+                      onChange={(event, selectedDate) => {
+                        setDate(selectedDate);
+                        props.setItem(prev => ({
+                          ...prev,
+                          dueDate: selectedDate.getTime()
+                        }))
+                      }}
+                    />
                   )
                 }
               </Box>

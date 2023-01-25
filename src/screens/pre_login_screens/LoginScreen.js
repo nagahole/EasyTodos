@@ -1,11 +1,11 @@
 import { Alert, KeyboardAvoidingView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { auth } from '../firebase';
+import { auth } from '../../firebase';
 import { Box, Button, Center, FormControl, Heading, HStack, Input, Link, VStack } from 'native-base';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
-import { setEmail, setPassword, setSignedIn, setUID } from '../redux/action';
+import { setEmail, setPassword, setSignedIn, setUID } from '../../redux/action';
 import NetInfo from '@react-native-community/netinfo';
 import firebase from 'firebase/compat/app';
 
