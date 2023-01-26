@@ -78,7 +78,7 @@ class ChangePasswordScreen extends React.Component {
 
               Alert.alert("Password updated");
             })
-            .catch((error) => { Alert.alert(error.nativeErrorCode, error.nativeErrorMessage) });
+            .catch((error) => { Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message) });
         })
         .catch((error) => { 
           if (error.code === 'auth/wrong-password') {

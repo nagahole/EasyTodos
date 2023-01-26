@@ -108,9 +108,9 @@ class RegisterScreen extends React.Component {
             .then(() => {
               Alert.alert("Email verification sent");
             })
-            .catch(error => Alert.alert(error.nativeErrorCode, error.nativeErrorMessage));
+            .catch(error => Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message));
         })
-        .catch(error => Alert.alert(error.nativeErrorCode, error.nativeErrorMessage));
+        .catch(error => Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message));
     })
   }
 

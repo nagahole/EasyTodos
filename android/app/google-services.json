@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "683728813647-3ct11vh08d94t252bg2vuvhfhbbde7pb.apps.googleusercontent.com",
+          "client_id": "683728813647-tf96hvo7g1h7idegi5qqensf4g3im6i7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.easytodos",
-            "certificate_hash": "0bf3e712b648f3876f8e771ee3315274c7498e04"
+            "certificate_hash": "04b96086b0bfd892049196f87d9d61c427464e09"
           }
         },
         {

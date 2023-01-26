@@ -17,7 +17,7 @@ export default function ForgotPasswordScreen({navigation, route}) {
         Alert.alert("Password reset email sent");
       })
       .catch(error => {
-        Alert.alert(error.nativeErrorCode, error.nativeErrorMessage);
+        Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message);
       });
   }
 

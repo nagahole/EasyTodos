@@ -27,15 +27,19 @@ export default function LoginScreen({navigation, route}) {
 
   }, [])
   
-  function handleLogin(email = null, password = null) {
+  function handleLogin() {
+    if (emailText === "" || passwordText === "") {
+      Alert.alert("Please fill out the fields");
+      return;
+    }
     auth()
-      .signInWithEmailAndPassword(email?? emailText, password?? passwordText)
+      .signInWithEmailAndPassword(emailText, passwordText)
       .then(userCredentials => {
         const user = userCredentials.user;
         console.log("Logged in with", user.email);        
       })
       .catch(error => { 
-        Alert.alert(error.nativeErrorCode, error.nativeErrorMessage);
+        Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message);
       });
   }
 
@@ -94,22 +98,23 @@ export default function LoginScreen({navigation, route}) {
             >
               Register
             </Button>
-            {
-              Platform.OS !== 'android' && (
-                //Android just doesn't work :/
-                <GoogleSigninButton 
-                  size={1} 
-                  style={{
-                    marginTop: 5,
-                    transform: [
-                      { scaleX: 0.97 },
-                      { scaleY: 1.05 }
-                    ]
-                  }}
-                  onPress={() => onGoogleButtonPress().then(() => console.log("Signed in with google!"))}
-                />
-              )
-            }
+              {/* ANDORID WORKS ! :D  SIKE ITS STILL BROEKN*/}
+              {
+                Platform.OS !== 'android' && (
+                  <GoogleSigninButton 
+                    size={1} 
+                    style={{
+                      marginTop: 5,
+                      transform: [
+                        { scaleX: 0.97 },
+                        { scaleY: 1.05 }
+                      ]
+                    }}
+                    onPress={() => onGoogleButtonPress().then(() => console.log("Signed in with google!"))}
+                  />
+                )
+              }
+              
             <Link mt="3" c
               _text={{
                 color: 'green.100'

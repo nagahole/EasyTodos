@@ -29,7 +29,7 @@ export default function ProfileScreen({route, navigation}) {
               .then(() => {
                 navigation.replace("Login");
               })
-              .catch(error => Alert.alert(error.nativeErrorCode, error.nativeErrorMessage))
+              .catch(error => Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message))
           }
         }
       ]);

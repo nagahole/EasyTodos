@@ -61,12 +61,12 @@ class EditEmailScreen extends React.Component {
                   this.props.navigation.goBack();
                   Alert.alert("Email updated and verification sent");
                 })
-                .catch((error) => {Alert.alert(error.nativeErrorCode, error.nativeErrorMessage )})
+                .catch((error) => {Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message )})
             })
-            .catch((error) => { Alert.alert(error.nativeErrorCode, error.nativeErrorMessage) });
+            .catch((error) => { Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message) });
         })
         .catch((error) => { 
-          Alert.alert(error.nativeErrorCode, error.nativeErrorMessage);
+          Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message);
         });
     })
   }
