@@ -75,7 +75,7 @@ function MyTabBar({ state, descriptors, navigation }) {
 
         let iconName;
 
-        if (route.name === 'Home Stack') {
+        if (route.name === 'Home Drawer') {
           iconName = 'home-outline';
         } else if (route.name === 'Profile Stack') {
           iconName = 'person-outline';

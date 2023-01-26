@@ -42,7 +42,7 @@ export default function CalendarViewScreen({navigation, route}) {
         })
       }
 
-      _setCallbackTodos(loadedList); //Read initialization for notes
+      _setCallbackTodos(loadedList);
     })
 
   }, []);
@@ -136,7 +136,8 @@ export default function CalendarViewScreen({navigation, route}) {
         items={agendaData}
         renderItem={(item, isFirst) => (
           <TouchableOpacity onPress={() => { navigation.navigate("Calendar Edit", {
-            item: item
+            item: item,
+            
           }) }}>
             <Box 
               flex={1}
