@@ -8,12 +8,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:683728813647:android:778ce59a3c4f99de53f43a",
+        "mobilesdk_app_id": "1:683728813647:android:1fae5417cbfcc4f753f43a",
         "android_client_info": {
           "package_name": "com.easytodos"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "683728813647-3ct11vh08d94t252bg2vuvhfhbbde7pb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.easytodos",
+            "certificate_hash": "0bf3e712b648f3876f8e771ee3315274c7498e04"
+          }
+        },
         {
           "client_id": "683728813647-9mav57hd0hj75rdkimd717rrqpf1f5t6.apps.googleusercontent.com",
           "client_type": 3

@@ -1,6 +1,6 @@
 import { View, TouchableOpacity, StyleSheet, Alert, Dimensions } from 'react-native'
 import React, { useEffect, useRef } from 'react'
-import { Box, HStack, Menu, PresenceTransition, Pressable, Text } from 'native-base';
+import { Box, HStack, Menu, PresenceTransition, Pressable, Text, VStack } from 'native-base';
 import { Swipeable, RectButton } from 'react-native-gesture-handler'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { Easing, useAnimatedStyle, useValue, withTiming } from 'react-native-reanimated';
@@ -277,7 +277,7 @@ export default function FlatlistTodoItem(props) {
             <HStack justifyContent="space-between">
               <Text
                 mt="-1"
-                flex={1.2}
+                flex={1.5}
                 fontSize={25}
                 bold={true}
                 lineHeight={27}
@@ -292,11 +292,7 @@ export default function FlatlistTodoItem(props) {
 
                   if (props.item.pinned || props.item.reminder !== "none")
                     return (
-                      <HStack flex={1} space={2} flexDir="row-reverse">
-                        {
-                          props.item.pinned &&
-                            <FontAwesomeIcon icon="fa-solid fa-thumbtack" color="white"/>
-                        }
+                      <VStack flex={1} space="2.5" alignItems="flex-end" mr="-1" mt="-0.5">
                         {
                           props.item.reminder !== "none" && props.item.dueDate != null && 
                             <HStack space={1.5}>
@@ -309,10 +305,14 @@ export default function FlatlistTodoItem(props) {
                                   : props.item.customReminder
                                 }
                               </Text>
-                              <FontAwesomeIcon icon="fa-solid fa-bell" color="#fbbf24" size={15} style={{ marginTop: -0.5 }}/>
+                              <FontAwesomeIcon icon="fa-solid fa-bell" color="#fbbf24" size={16} style={{ marginTop: -0.5 }}/>
                             </HStack>
                         }
-                      </HStack>
+                        {
+                          props.item.pinned &&
+                            <FontAwesomeIcon icon="fa-solid fa-thumbtack" color="white" style={{ marginRight: -0.13 }}/>
+                        }
+                      </VStack>
                     )
                 }()
               }

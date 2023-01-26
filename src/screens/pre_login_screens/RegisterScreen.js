@@ -101,7 +101,6 @@ class RegisterScreen extends React.Component {
       auth()
         .createUserWithEmailAndPassword(this.state.email, this.state.password)
         .then(userCredentials => {
-          const user = userCredentials.user;
           auth().currentUser.sendEmailVerification({
             handleCodeInApp: true,
             url: "https://easy-todo-ffcb3.firebaseapp.com"
@@ -121,7 +120,6 @@ class RegisterScreen extends React.Component {
 
     return (
       <Center 
-        safeArea 
         w="100%"
         h="100%"
         _dark={{
@@ -131,6 +129,7 @@ class RegisterScreen extends React.Component {
         _light={{
           bg: "white"
         }}
+        safeArea
       >
         <Box safeArea p="2" w="90%" maxW="290" py="8">
           <Heading size="lg" color="coolGray.800" _dark={{

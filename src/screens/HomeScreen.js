@@ -1,13 +1,13 @@
-import { Box, Button, FlatList, HStack, Menu, Pressable, Text, View, VStack } from "native-base";
+import { Box, Button, FlatList, Heading, HStack, Menu, Pressable, Text, View, VStack } from "native-base";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCallback, useEffect } from "react";
 import { useState } from "react";
-import { Alert, LayoutAnimation } from "react-native";
+import { Alert, Dimensions, LayoutAnimation } from "react-native";
 import FlatlistTodoItem from "../components/FlatlistTodoItem";
 import EditTodoModal from "../components/EditTodoModal";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useRef } from "react";
-import { useSharedValue } from "react-native-reanimated";
+import Animated, { Easing, timing, useAnimatedStyle, useSharedValue, useValue, withSpring, withTiming } from "react-native-reanimated";
 import { dbRef } from "../firebase";
 import SetReminderModal from "../components/SetReminderModal";
 import notifee, { TriggerType } from '@notifee/react-native';
@@ -32,7 +32,7 @@ export default function HomeScreen({navigation, route}) {
 
   const [settings, setSettings] = useState(defaultSettings);
 
-  const justLaunched = useRef(true); //This is to bypass animations for initial sort
+  const [justLaunched, setJustLaunched] = useState(true); //This is to bypass animations for initial sort
   const justLaunchedTimeout = 1000;
 
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -58,7 +58,6 @@ export default function HomeScreen({navigation, route}) {
   });
 
   const [_callbackTodos, _setCallbackTodos ] = useState([]);
-
   /*
     THIS IS A HACK:
 
@@ -90,7 +89,8 @@ export default function HomeScreen({navigation, route}) {
 
           reminder: data[key].reminder ?? "none",
           customReminder: data[key].customReminder ?? "30 minutes",
-          allDay: data[key].allDay
+          allDay: data[key].allDay,
+          reminderID: data[key].reminderID
         })
       }
 
@@ -101,7 +101,7 @@ export default function HomeScreen({navigation, route}) {
         notifee.cancelAllNotifications();
         for(let i = 0; i < loadedList.length; i++) {
           setupNotification(loadedList[i]);
-      }
+        }
       }
       
 
@@ -126,19 +126,19 @@ export default function HomeScreen({navigation, route}) {
   }, [dbRef(), settings]);
 
   useEffect(() => {
-    sortTodos();
-  }, [settings.sortBy])
-
-  useEffect(() => {
     readData();
 
     setTimeout(() => {
-      justLaunched.current = false;
+      setJustLaunched(false);
     }, justLaunchedTimeout);
   },[]);
 
   useEffect(() => {
-    if (!justLaunched.current) {
+    sortTodos();
+  }, [settings.sortBy])
+
+  useEffect(() => {
+    if (!justLaunched) {
       LayoutAnimation.configureNext({
         duration: 300,
         update: { type: LayoutAnimation.Types.easeInEaseOut },
@@ -153,7 +153,7 @@ export default function HomeScreen({navigation, route}) {
   }, [_callbackTodos])
 
   function sortTodos() {
-    if (!justLaunched.current) {
+    if (!justLaunched) {
       LayoutAnimation.configureNext({
         update: { duration: 300, type: LayoutAnimation.Types.easeInEaseOut },
       });
@@ -238,6 +238,9 @@ export default function HomeScreen({navigation, route}) {
   }
 
   function saveEditModalChanges() {
+    if (editModalItem.id === -1)
+      return;
+
     dbRef(`/todos/${editModalItem.id}`).update({
       title: editModalItem.title,
       description: editModalItem.description.trim(),
@@ -249,18 +252,8 @@ export default function HomeScreen({navigation, route}) {
 
   async function setupNotification(todoItem) {
     if (todoItem.dueDate == null || todoItem.dueDate == undefined) {
-      console.log("No due date - returning");
       return;
     }
-
-    // Request permissions (required for iOS)
-    await notifee.requestPermission()
-
-    // Create a channel (required for Android)
-    const channelId = await notifee.createChannel({
-      id: 'default',
-      name: 'Default Channel',
-    });
 
     let secondsPrior;
 
@@ -378,7 +371,16 @@ export default function HomeScreen({navigation, route}) {
     if (!todoItem.allDay) 
       notifBody += ` at ${timeText}`;
 
-    console.log(notifBody);
+    //console.log(notifBody);
+
+    // Request permissions (required for iOS)
+    await notifee.requestPermission()
+
+    // Create a channel (required for Android)
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
 
     // Create a trigger notification
     await notifee.createTriggerNotification(
@@ -398,8 +400,13 @@ export default function HomeScreen({navigation, route}) {
   }
 
   function saveReminderModalChanges() {
+    if (reminderModalItem.id === -1)
+      return;
 
     dbRef(`/todos/${reminderModalItem.id}`).update({
+      dueDate: reminderModalItem.dueDate,
+      allDay: reminderModalItem.allDay,
+
       reminder: reminderModalItem.reminder,
       customReminder: reminderModalItem.customReminder
     });
@@ -440,7 +447,7 @@ export default function HomeScreen({navigation, route}) {
           >
             <HStack alignItems="center" space="3">
               <FontAwesomeIcon color="#22c55e" icon="fa-solid fa-bars" size={24}/>
-              <Text fontSize="18" color="green.500">{route.params.mode === 'completed'? "Completed" : "Home"}</Text>
+              <Text fontSize="18" fontWeight="500" color="green.500">{route.params.mode === 'completed'? "Completed" : "Home"}</Text>
             </HStack>
           </Button>
           <HStack
@@ -544,7 +551,7 @@ export default function HomeScreen({navigation, route}) {
       pt={insets.top}
       pl={insets.left}
       pr={insets.right}
-    >
+    >      
       <EditTodoModal
         isOpen={editModalOpen}
         setOpen={setEditModalOpen}
@@ -583,6 +590,14 @@ export default function HomeScreen({navigation, route}) {
             }}
           />
         }
+        // Debugging purposes
+        // Uncomment when you want to check trigger notification IDs
+        // ListFooterComponent={
+        //   <Button onPress={() => {notifee.getTriggerNotificationIds().then(ids => console.log('All trigger notifications: ', ids));
+        // }}>
+        //     Press me
+        //   </Button>
+        // }
       />
     </Box>
   )

@@ -3,6 +3,11 @@
     "version": ">= 3.3.2"
   },
   "build": {
+    "base-local": {
+      "node": "12.22.5",
+      "developmentClient": true,
+      "prebuildCommand": "prebuild --yarn"
+    },
     "development": {
       "developmentClient": true,
       "distribution": "internal"

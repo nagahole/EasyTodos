@@ -38,7 +38,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.nagahole.EasyTodos",
+      "package": "com.easytodos",
       "googleServicesFile": "./google-services.json"
     },
     "web": {

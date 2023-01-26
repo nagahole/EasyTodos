@@ -1,17 +1,18 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeStackScreen from "./HomeStackScreen";
-import { Box, Circle, Modal, useColorMode } from "native-base"
+import { Box, Circle, Heading, Modal, useColorMode } from "native-base"
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ProfileStackScreen from "./ProfileStackScreen";
 import AddTodoScreen from "../screens/AddTodoScreen";
-import { View, Text, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
-import { useState } from "react";
+import { View, Text, TouchableOpacity, TouchableWithoutFeedback, Dimensions } from 'react-native';
+import { useEffect, useState } from "react";
 import AddTodoModal from "../components/AddTodoModal";
 import Todo from "../classes/Todo";
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import HomeDrawer from "./HomeDrawer";
 import { dbRef } from "../firebase";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 const Tab = createBottomTabNavigator();
 
@@ -161,8 +162,53 @@ export default function MainApp() {
 
   const [ addTodoModalOpen, setAddTodoModalOpen ] = useState(false);
 
+  // Splashscreen here to hide the imperfection of the time it takes to fetch data from the database
+  const solidDuration = 100;
+  const fadeDuration = 400;
+  const [showSplashScreen, setShowSplashScreen] = useState(true);
+
+  const splashScreenOpacity = useSharedValue(1);
+
+  const splashScreenStyles = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(splashScreenOpacity.value, {
+        duration: fadeDuration,
+        easing: Easing.in(Easing.linear),
+      })
+    };
+  });
+
+  useEffect(() => {
+    setTimeout(() => {
+      splashScreenOpacity.value = 0;
+      setTimeout(() => {
+        setShowSplashScreen(false);
+      }, fadeDuration)
+    }, solidDuration)
+  }, [])
+
   return (
     <>
+      {
+        showSplashScreen && (
+          <Animated.View
+            style={[{
+              paddingBottom: Dimensions.get('window').height * 0.1,
+              backgroundColor: '#18181b',
+              width: Dimensions.get('window').width,
+              height: Dimensions.get('window').height,
+              position: 'absolute',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 9999
+            }, splashScreenStyles]}
+          >
+            <Heading fontSize={35}>
+              EASY TODOS
+            </Heading>
+          </Animated.View>
+        )
+      }
       <AddTodoModal
         isOpen={addTodoModalOpen}
         setOpen={open => setAddTodoModalOpen(open)}

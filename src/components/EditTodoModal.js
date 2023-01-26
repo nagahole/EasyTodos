@@ -1,5 +1,5 @@
-import React from 'react'
-import { Box, Button, HStack, Input, Modal, Switch, Text, VStack } from 'native-base';
+import React, { useRef } from 'react'
+import { Box, Button, HStack, Input, KeyboardAvoidingView, Modal, Switch, Text, VStack } from 'native-base';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { dropdownColorValues } from './AddTodoModal';
 import { useState } from 'react';
@@ -21,6 +21,15 @@ export default function EditTodoModal(props) {
 
   const insets = useSafeAreaInsets();
 
+  const justLaunched = useRef(true);
+  const justLaunchedTimeout = 1000;
+
+  useEffect(() => {
+    setTimeout(() => {
+      justLaunched.current = false;
+    }, justLaunchedTimeout)
+  }, []);
+
   useEffect(() => {
     setDropdownValue(props.item.color);
     if (props.item.dueDate == null) {
@@ -32,7 +41,7 @@ export default function EditTodoModal(props) {
     }
 
     setAllDay(props.item.allDay);
-  }, [props.isOpen])
+  }, [props.isOpen]);
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate;
@@ -52,7 +61,13 @@ export default function EditTodoModal(props) {
       is24Hour: true,
     });
   };
-  
+
+  useEffect(() => {
+    if (justLaunched.current)
+      return;
+
+    props.saveChanges();
+  }, [date, allDay]);
 
   return (
     <Modal
@@ -72,7 +87,11 @@ export default function EditTodoModal(props) {
         paddingBottom: insets.bottom + Dimensions.get('window').height * 0.1
       }}
     >
-      <Modal.Content overflow="visible" borderRadius="10">
+    <KeyboardAvoidingView
+      behavior="position"
+      enabled
+    >
+      <Modal.Content alignSelf="center" overflow="visible" borderRadius="10">
         <Modal.Header borderRadius="10">
           <Input
             p="0"
@@ -122,7 +141,7 @@ export default function EditTodoModal(props) {
                     setShowDatePicker(bool);
                     props.setItem(prev => ({
                       ...prev,
-                      dueDate: null
+                      dueDate: bool? date : null
                     }));
                   }}
                 />
@@ -133,7 +152,11 @@ export default function EditTodoModal(props) {
                   <>
                     <Box mt="2" w='48' borderRadius="10" bg="dark.50:alpha.60" pt="1" pb="1.5" alignSelf="center">
                       <Text color="gray.400" textAlign="center" fontSize="16">
-                        { moment(date).format('MMM Do, h:mm a') }
+                        { 
+                          moment(date).format(
+                            props.item.allDay? 'MMM Do' : 'MMM Do, h:mm a'
+                          ) 
+                        }
                       </Text>
                     </Box>
                     <HStack alignItems="center" space={4} alignSelf="center" mt="3">
@@ -145,14 +168,18 @@ export default function EditTodoModal(props) {
                       >
                         Set date
                       </Button>
-                      <Button
-                        colorScheme="lightBlue"
-                        onPress={() => {
-                          showMode('time');
-                        }}
-                      >
-                        Set time
-                      </Button>
+                      {
+                        !props.item.allDay && (
+                          <Button
+                            colorScheme="lightBlue"
+                            onPress={() => {
+                              showMode('time');
+                            }}
+                          >
+                            Set time
+                          </Button>
+                        )
+                      }
                     </HStack>
                   </>
               }
@@ -180,7 +207,7 @@ export default function EditTodoModal(props) {
                         />
                       )
                     }
-                    <HStack ml="12" alignItems="center" space={4} alignSelf="center">
+                    <HStack mt="2.5" ml="10" alignItems="center" space={4} alignSelf="center">
                       <Text fontSize="16">All day</Text>
                       <Switch
                         size="md"
@@ -225,6 +252,7 @@ export default function EditTodoModal(props) {
           </VStack>
         </Modal.Body>
       </Modal.Content>
+    </KeyboardAvoidingView>
     </Modal>
   )
 }

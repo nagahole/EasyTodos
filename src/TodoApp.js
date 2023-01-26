@@ -10,7 +10,7 @@ import MainApp from './stacks/MainAppTabsScreen';
 import { useColorMode } from 'native-base';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faPlus, faClock, faCircle, faCheck, faTrash, faThumbTack, faPencil, faSlash, faBars, faFilter, faRotateLeft,
-  faCircleCheck, faLeftLong, faChevronRight, faBell } from '@fortawesome/free-solid-svg-icons'
+  faCircleCheck, faLeftLong, faChevronRight, faBell, faBellSlash } from '@fortawesome/free-solid-svg-icons'
 
 const Stack = createNativeStackNavigator();
 
@@ -25,7 +25,7 @@ const MyTheme = {
 };
 
 library.add(faPlus, faClock, faCircle, faCheck, faTrash, faThumbTack, faPencil, faSlash, faBars, faFilter, faRotateLeft,
-  faCircleCheck, faLeftLong, faChevronRight, faBell);
+  faCircleCheck, faLeftLong, faChevronRight, faBell, faBellSlash);
 
 export default function TodoApp() {
 

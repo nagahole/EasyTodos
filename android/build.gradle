@@ -6,6 +6,13 @@ buildscript {
         minSdkVersion = Integer.parseInt(findProperty('android.minSdkVersion') ?: '21')
         compileSdkVersion = 33 //Integer.parseInt(findProperty('android.compileSdkVersion') ?: '33')
         targetSdkVersion = 33 //Integer.parseInt(findProperty('android.targetSdkVersion') ?: '33')
+        
+        //MINE
+        supportLibVersion = "27.1.1"
+        googlePlayServicesAuthVersion = "19.2.0"
+        androidXCore = "1.5.0"
+        //MINE
+
         if (findProperty('android.kotlinVersion')) {
             kotlinVersion = findProperty('android.kotlinVersion')
         }
@@ -31,6 +38,7 @@ buildscript {
         // in the individual module build.gradle files
 
         //Fuck you ^^^
+        classpath 'com.android.tools.build:gradle:4.2.1'
         classpath 'com.google.gms:google-services:4.3.14'
     }
 }
@@ -56,6 +64,11 @@ allprojects {
         }
 
         google()
+        
+        //MINE
+        jcenter()
+        //MINE
+
         mavenCentral {
             // We don't want to fetch react-native from Maven Central as there are
             // older versions over there.
@@ -64,5 +77,5 @@ allprojects {
             }
         }
         maven { url 'https://www.jitpack.io' }
-    }
+    }   
 }

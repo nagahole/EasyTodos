@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Button, FormControl, Heading, HStack, Input, Modal, Switch, Text, VStack } from 'native-base'
+import { Box, Button, FormControl, Heading, HStack, Input, KeyboardAvoidingView, Modal, Switch, Text, VStack } from 'native-base'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
@@ -59,7 +59,11 @@ export default function AddTodoModal(props) {
       display="flex"
       justifyContent="flex-end"
     >
-      <Modal.Content w="95%"  bg="dark.100" shadow="9" style={{
+    <KeyboardAvoidingView
+      behavior="position"
+      enabled
+    >
+      <Modal.Content w="95%" alignSelf="center" bg="dark.100" shadow="9" style={{
         paddingBottom: insets.bottom,
       }}> 
         <Modal.Body>
@@ -127,7 +131,11 @@ export default function AddTodoModal(props) {
                   <>
                     <Box mt="2" w='48' borderRadius="10" bg="dark.50:alpha.60" pt="1" pb="1.5" alignSelf="center">
                       <Text color="gray.400" textAlign="center" fontSize="16">
-                        { moment(date).format('MMM Do, h:mm a') }
+                        { 
+                          moment(date).format(
+                            allDay? 'MMM Do' : 'MMM Do, h:mm a'
+                          ) 
+                        }
                       </Text>
                     </Box>
                     <HStack alignItems="center" space={4} alignSelf="center" mt="3">
@@ -139,14 +147,18 @@ export default function AddTodoModal(props) {
                       >
                         Set date
                       </Button>
-                      <Button
-                        colorScheme="lightBlue"
-                        onPress={() => {
-                          showMode('time');
-                        }}
-                      >
-                        Set time
-                      </Button>
+                      {
+                        !allDay && (
+                          <Button
+                            colorScheme="lightBlue"
+                            onPress={() => {
+                              showMode('time');
+                            }}
+                          >
+                            Set time
+                          </Button>
+                        )
+                      }
                     </HStack>
                   </>
               }
@@ -221,6 +233,7 @@ export default function AddTodoModal(props) {
           </VStack>
         </Modal.Body>
       </Modal.Content>
+    </KeyboardAvoidingView>
     </Modal>
   )
 }

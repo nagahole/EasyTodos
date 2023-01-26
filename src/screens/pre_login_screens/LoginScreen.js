@@ -3,20 +3,11 @@ import { Box, Button, Center, FormControl, Heading, HStack, Input, Link, VStack 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import auth from "@react-native-firebase/auth";
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 GoogleSignin.configure({
   webClientId: "683728813647-9mav57hd0hj75rdkimd717rrqpf1f5t6.apps.googleusercontent.com",
 });
-
-function GoogleSignIn() {
-  return (
-    <Button
-      title="Google Sign-In"
-      onPress={() => onGoogleButtonPress().then(() => console.log('Signed in with Google!'))}
-    />
-  );
-}
 
 export default function LoginScreen({navigation, route}) {
 
@@ -65,13 +56,11 @@ export default function LoginScreen({navigation, route}) {
       pl={insets.left}
       pr={insets.right}
     >
-
-      <Heading fontSize={35}>
-        EASY TODOS
-      </Heading>
-
       <Box safeArea p="2" py="2" w="90%" maxW="310">
         <VStack space={3}>
+          <Heading fontSize={35} alignSelf="center" mb="10">
+            EASY TODOS
+          </Heading>
           <FormControl>
             <Input autoCapitalize='none' fontSize={16} h={10} placeholder="Email"
               value={emailText} onChangeText={text => setEmailText(text)}
@@ -105,17 +94,22 @@ export default function LoginScreen({navigation, route}) {
             >
               Register
             </Button>
-            <GoogleSigninButton 
-              size={1} 
-              style={{
-                marginTop: 5,
-                transform: [
-                  { scaleX: 0.97 },
-                  { scaleY: 1.05 }
-                ]
-              }}
-              onPress={() => onGoogleButtonPress().then(() => console.log("Signed in with google!"))}
-            />
+            {
+              Platform.OS !== 'android' && (
+                //Android just doesn't work :/
+                <GoogleSigninButton 
+                  size={1} 
+                  style={{
+                    marginTop: 5,
+                    transform: [
+                      { scaleX: 0.97 },
+                      { scaleY: 1.05 }
+                    ]
+                  }}
+                  onPress={() => onGoogleButtonPress().then(() => console.log("Signed in with google!"))}
+                />
+              )
+            }
             <Link mt="3" c
               _text={{
                 color: 'green.100'

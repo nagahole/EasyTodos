@@ -11,5 +11,6 @@ export default class Todo {
     this.reminder = "none";
     this.customReminder = "30 minutes";
     this.allDay = false;
+    this.reminderID = "-1";
   }
 }
