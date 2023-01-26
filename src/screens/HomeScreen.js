@@ -12,6 +12,7 @@ import { dbRef } from "../firebase";
 import SetReminderModal from "../components/SetReminderModal";
 import notifee, { TriggerType } from '@notifee/react-native';
 import moment from "moment";
+import NagaUtils from "../../utils/NagaUtils";
 
 //TODO: Move this into a util folder
 
@@ -19,7 +20,7 @@ String.prototype.capitalize = function() {
   return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
-const defaultSettings = {
+export const defaultSettings = {
   sortBy: 'creation date',
   darkMode: true,
 }
@@ -149,7 +150,7 @@ export default function HomeScreen({navigation, route}) {
         },
       });
     }
-    setTodos(_callbackTodos.sort(sortTodoComparator));
+    setTodos(_callbackTodos.sort((a,b) => NagaUtils.sortTodoComparator(a, b, settings.sortBy)));
   }, [_callbackTodos])
 
   function sortTodos() {
@@ -169,65 +170,9 @@ export default function HomeScreen({navigation, route}) {
         value and I need you to update it accordingly"
       */
       let copy = [...prev];
-      copy.sort(sortTodoComparator);
+      copy.sort((a,b) => NagaUtils.sortTodoComparator(a, b, settings.sortBy));
       return copy;
     });
-  }
-
-  function sortTodoComparator(a, b) {
-
-    function compareDueDate() {
-
-      let x = new Date(a.dueDate);
-      x.setHours(0,0,0,0);
-
-      let y = new Date(b.dueDate);
-      y.setHours(0,0,0,0);
-
-      if (a.allDay && b.allDay) { 
-        if (x.getTime() == y.getTime()) //Same day
-          return a.createdAt > b.createdAt;
-        else 
-          return x > y;
-      } else if (a.allDay)
-        return x.getTime() > b.dueDate;
-      else if (b.allDay)
-        return a.dueDate > y.getTime();
-      else 
-        return a.dueDate > b.dueDate;
-    }
-
-    function compare() {
-      if (settings.sortBy === 'creation date') {
-        return a.createdAt > b.createdAt;
-      } else if (settings.sortBy === 'due date') {
-        if (a.dueDate == null && b.dueDate == null)
-          return a.createdAt > b.createdAt;
-        else if (a.dueDate == null)
-          return true
-        else if (b.dueDate == null)
-          return false
-        else
-          return compareDueDate()
-      } else if (settings.sortBy === 'title') {
-        let res = a.title.localeCompare(b.title, 'en', { sensitivity: 'base' })
-        if (res === 0)
-          return a.createdAt > b.createdAt;
-        return res;
-      } else {
-        console.warn("settings.sortBy not recognized: " + settings.sortBy);
-      }
-    }
-
-    return (
-      (a.pinned && b.pinned)
-      ? compare()
-      : a.pinned
-      ? false
-      : b.pinned
-      ? true 
-      : compare()
-    )
   }
 
   function toggleComplete(item) {
@@ -371,7 +316,7 @@ export default function HomeScreen({navigation, route}) {
     if (!todoItem.allDay) 
       notifBody += ` at ${timeText}`;
 
-    //console.log(notifBody);
+    console.log(notifBody);
 
     // Request permissions (required for iOS)
     await notifee.requestPermission()

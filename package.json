@@ -8,7 +8,6 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "react-dom": "18.1.0",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/free-brands-svg-icons": "^6.2.1",
     "@fortawesome/free-regular-svg-icons": "^6.2.1",
@@ -37,7 +36,9 @@
     "moment": "^2.29.4",
     "native-base": "^3.4.25",
     "react": "18.1.0",
+    "react-dom": "18.1.0",
     "react-native": "0.70.5",
+    "react-native-calendars": "^1.1293.0",
     "react-native-dropdown-picker": "^5.4.4",
     "react-native-gesture-handler": "^2.9.0",
     "react-native-reanimated": "^2.14.2",

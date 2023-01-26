@@ -1,5 +1,4 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import HomeStackScreen from "./HomeStackScreen";
 import { Box, Circle, Heading, Modal, useColorMode } from "native-base"
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -21,12 +20,6 @@ function MyTabBar({ state, descriptors, navigation }) {
   const { colorMode } = useColorMode();
 
   const insets = useSafeAreaInsets();
-
-  const forFade = ({ current }) => ({
-  cardStyle: {
-    opacity: current.progress,
-  },
-});
 
   return (
     <Box 
@@ -223,10 +216,10 @@ export default function MainApp() {
       />
 
       <Tab.Navigator
-        initialRouteName="Home Stack"
+        initialRouteName="Home Drawer"
         tabBar={props => <MyTabBar { ...props } />}
       >
-        <Tab.Screen name="Home Stack" component={HomeStackScreen} options={{headerShown: false, title: "Home"}}/>
+        <Tab.Screen name="Home Drawer" component={HomeDrawer} options={{headerShown: false, title: "Home"}}/>
         <Tab.Screen name="Add Todo" component={AddTodoScreen} options={{headerShown: false, title: "Add Todo",
           callback: () => {
             setAddTodoModalOpen(true);

@@ -250,26 +250,27 @@ export default function FlatlistTodoItem(props) {
             }}
           >
             {
-              props.item.dueDate && 
-              <>
-                <Text textAlign="center" fontSize="md" lineHeight={18}>
-                  { // The bug was caused by the box above being inside this text component
-                    // which for some reason on height changes on the flatlist item caused
-                    // endless growing of the item. The descriptiontext wasn't the issue: it
-                    // just aggravated it whenever it changed the height of the list item
-                    moment(new Date(props.item.dueDate)).format('Do') }
-                  {'\n'}
-                  { moment(new Date(props.item.dueDate)).format('MMM') }
-                </Text>
-                {
-                  !props.item.allDay &&
-                    <Box mt="2">
-                      <Text fontSize="13" color="white">
-                          { moment(new Date(props.item.dueDate)).format('h:mm a') }
-                      </Text>
-                    </Box>
-                }
-              </>
+              props.item.dueDate && (
+                <>
+                  <Text textAlign="center" fontSize="md" lineHeight={18}>
+                    { // The bug was caused by the box above being inside this text component
+                      // which for some reason on height changes on the flatlist item caused
+                      // endless growing of the item. The descriptiontext wasn't the issue: it
+                      // just aggravated it whenever it changed the height of the list item
+                      moment(new Date(props.item.dueDate)).format('Do') }
+                    {'\n'}
+                    { moment(new Date(props.item.dueDate)).format('MMM') }
+                  </Text>
+                  {
+                    !props.item.allDay &&
+                      <Box mt="2">
+                        <Text fontSize="13" color="white">
+                            { moment(new Date(props.item.dueDate)).format('h:mm a') }
+                        </Text>
+                      </Box>
+                  }
+                </>
+              )
             }
             
           </Box>

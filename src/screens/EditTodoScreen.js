@@ -1,104 +1,115 @@
-import React, { useRef } from 'react'
-import { Box, Button, HStack, Input, Modal, Select, Switch, Text, VStack } from 'native-base';
-import { dropdownColorValues } from './AddTodoModal';
-import { useState } from 'react';
-import { useEffect } from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Dimensions, LayoutAnimation, Platform } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { TriggerType } from '@notifee/react-native';
-import moment from 'moment';
-import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import NagaUtils from '../../utils/NagaUtils';
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
+import { Box, HStack, Input, VStack, Text, Switch, Select, ScrollView } from "native-base";
+import { useEffect, useState } from "react";
+import { LayoutAnimation } from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
+import NagaUtils from "../../utils/NagaUtils";
+import { dropdownColorValues } from '../components/AddTodoModal';
+import { dbRef } from "../firebase";
 
-export default function SetReminderModal(props) {
+export default function EditTodoScreen({navigation, route}) {
 
-  const [reminderValue, setReminderValue] = useState("none");
 
-  const insets = useSafeAreaInsets();
+  //TODO: ADD ANDROID COMPATIBILITY BY ADDING THOSE BUTTONS THAT IMPERATIVELY OPEN THE DATE TIME PICKERS
+  //AND STUFF
 
-  const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [allDay, setAllDay] = useState(false);
+  const [ title, setTitle ] = useState(route.params.item.title);
+  const [ description, setDescription ] = useState(route.params.item.description);
 
-  const [number, setNumber] = useState("30");
-  const [units, setUnits] = useState("minutes");
-
-  const justLaunched = useRef(true);
-  const justLaunchedTimeout = 1000;
-
-  useEffect(() => {
-    setTimeout(() => {
-      justLaunched.current = false;
-    }, justLaunchedTimeout)
-  }, []);
+  const [ showDatePicker, setShowDatePicker ] = useState(false);
+  const [ dropdownItems, setDropdownItems ] = useState(dropdownColorValues);
+  const [ dropdownOpen, setDropdownOpen ] = useState(false);
+  const [ dropdownValue, setDropdownValue ] = useState(route.params.item.color);
+  const [ date, setDate ] = useState(new Date());
+  const [ allDay, setAllDay] = useState(route.params.item.allDay);
+  const [ reminderValue, setReminderValue ] = useState(route.params.item.reminder);
+  const [ number, setNumber ] = useState(route.params.item.customReminder.split(' ')[0]?? "30");
+  const [ units, setUnits ] = useState(route.params.item.customReminder.split(' ')[1]?? "minutes");
 
   useEffect(() => {
-    setReminderValue(props.item.reminder);
-
-    let arr = props.item.customReminder.split(" ");
-    setUnits(arr[1]);
-    setNumber(arr[0]);
-
-    if (props.item.dueDate == null) {
+    if (route.params.item.dueDate == null) {
       setDate(new Date());
       setShowDatePicker(false);
     } else {
-      setDate(new Date(props.item.dueDate));
+      setDate(new Date(route.params.item.dueDate));
       setShowDatePicker(true);
     }
+  }, []);
 
-    setAllDay(props.item.allDay);
-
-  }, [props.isOpen]);
-
-  useEffect(() => {
-    if (justLaunched.current)
-      return;
-
-    props.saveChanges();
-  }, [date, allDay, reminderValue, number, units]);
-
-  const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate;
-    props.setItem(prev => ({
-      ...prev,
-      dueDate: selectedDate.getTime()
-    }))
-    setDate(currentDate);
-  };
-
-  const showMode = (currentMode) => {
-    DateTimePickerAndroid.open({
-      minimumDate: new Date(),
-      value: date,
-      onChange,
-      mode: currentMode,
-      is24Hour: true,
-    });
-  };
-  
   return (
-    <Modal
-      isOpen={props.isOpen}
-      onClose={() => { 
-        props.saveChanges(); 
-        props.setOpen(false);
+    <Box
+      w="100%"
+      h="100%"
+
+      _dark={{
+        bg: "dark.100"
       }}
-      animationPreset="fade"
-      style={{
-        paddingBottom: insets.bottom + Dimensions.get('window').height * 0.1
+
+      _light={{
+        bg: "white"
       }}
     >
-      <Modal.Content overflow="visible" borderRadius="10">
-        <Modal.Header borderRadius="10">
-          <Text textAlign="center" fontSize="xl">
-            Set reminder
-          </Text>
-        </Modal.Header>
-        <Modal.Body overflow="visible">
-          <Box pb="3">
+      <ScrollView contentContainerStyle={{
+        paddingHorizontal: 20,
+        paddingVertical: 15
+      }}>
+        <VStack space="3">
+          <Box px="1">
+            <Input
+              size="2xl"
+              textAlign="center"
+              value={title}
+              variant="underlined"
+              onChangeText={setTitle}
+              onEndEditing={() => {
+                dbRef(`/todos/${route.params.item.id}`).update({
+                  title: title
+                })
+              }}
+            /> 
+          </Box>
+          <Input
+            size="lg"
+            multiline={true}
+            numberOfLines={10}
+            minH="120"
+            variant="filled"
+            value={description}
+            onChangeText={setDescription}
+            bg="dark.50"
+            _focus={{
+              _dark: {
+                borderColor: 'gray.700',
+                backgroundColor: 'dark.50'
+              }
+            }}
+            onEndEditing={() => {
+              dbRef(`/todos/${route.params.item.id}`).update({
+                description: description
+              })
+            }}
+          />
+
+          <DropDownPicker
+            dropDownDirection="BOTTOM"
+            listMode="SCROLLVIEW"
+            theme="DARK"
+            open={dropdownOpen}
+            value={dropdownValue}
+            items={dropdownItems}
+            setOpen={setDropdownOpen}
+            setValue={setDropdownValue}
+            setItems={setDropdownItems}
+            onChangeValue={value => {
+              dbRef(`/todos/${route.params.item.id}`).update({
+                color: value
+              })
+            }}
+          />
+
+          <Box>
             <HStack alignItems="center" space={4} alignSelf="center">
               <Text fontSize="16">
                 Has due date
@@ -113,22 +124,23 @@ export default function SetReminderModal(props) {
                     update: { type: LayoutAnimation.Types.easeInEaseOut },
                   });
                   setShowDatePicker(bool);
-                  props.setItem(prev => ({
-                    ...prev,
-                    dueDate: bool? date.getTime() : null
-                  }));
+
+                  dbRef(`/todos/${route.params.item.id}`).update({
+                    dueDate: bool? date : null
+                  })
                 }}
               />
               
             </HStack>
             {
-              showDatePicker && Platform.OS === 'android' && (
+              //NON FUNCTIONAL : TODO - ADD THiS
+              showDatePicker && Platform.OS === 'android' &&
                 <>
                   <Box mt="2" w='48' borderRadius="10" bg="dark.50:alpha.60" pt="1" pb="1.5" alignSelf="center">
                     <Text color="gray.400" textAlign="center" fontSize="16">
                       { 
                         moment(date).format(
-                          props.item.allDay? 'MMM Do' : 'MMM Do, h:mm a'
+                          route.params.item.allDay? 'MMM Do' : 'MMM Do, h:mm a'
                         ) 
                       }
                     </Text>
@@ -143,7 +155,7 @@ export default function SetReminderModal(props) {
                       Set date
                     </Button>
                     {
-                      !props.item.allDay && (
+                      !route.params.item.allDay && (
                         <Button
                           colorScheme="lightBlue"
                           onPress={() => {
@@ -156,10 +168,9 @@ export default function SetReminderModal(props) {
                     }
                   </HStack>
                 </>
-              )
             }
-              
-              
+            
+            
             {
               showDatePicker && (
                 <Box alignItems="center" mt="2.5" justifyContent="center">
@@ -174,15 +185,14 @@ export default function SetReminderModal(props) {
                         is24Hour={true}
                         onChange={(event, selectedDate) => {
                           setDate(selectedDate);
-                          props.setItem(prev => ({
-                            ...prev,
+                          dbRef(`/todos/${route.params.item.id}`).update({
                             dueDate: selectedDate.getTime()
-                          }))
+                          })
                         }}
                       />
                     )
                   }
-                  <HStack ml="10" mt="2.5" alignItems="center" space={4} alignSelf="center">
+                  <HStack mt="2.5" ml="10" alignItems="center" space={4} alignSelf="center">
                     <Text fontSize="16">All day</Text>
                     <Switch
                       size="md"
@@ -193,18 +203,19 @@ export default function SetReminderModal(props) {
                           duration: 100,
                           update: { type: LayoutAnimation.Types.easeInEaseOut },
                         });
-                        props.setItem(prev => ({
-                          ...prev,
-                          allDay: bool
-                        }));
                         setAllDay(bool)
+                        dbRef(`/todos/${route.params.item.id}`).update({
+                          allDay: bool
+                        })
                       }}
                     />
                   </HStack>
                 </Box>
               )
             }
+            
           </Box>
+          
           <Select 
             selectedValue={reminderValue}
             fontSize="16"
@@ -236,11 +247,12 @@ export default function SetReminderModal(props) {
                 duration: 300,
                 update: { type: LayoutAnimation.Types.easeInEaseOut },
               });
-              props.setItem(prev => ({
-                ...prev,
-                reminder: itemValue
-              }));
+
               setReminderValue(itemValue);
+
+              dbRef(`/todos/${route.params.item.id}`).update({
+                reminder: itemValue
+              })
             }}
           >
             <Select.Item label="None" value="none" />
@@ -251,7 +263,6 @@ export default function SetReminderModal(props) {
             <Select.Item label="1 week before" value="1 week" />
             <Select.Item label="Custom" value="custom" />
           </Select>
-
           {
             reminderValue == "custom" && (
               <Box display="flex" flexDir="row">
@@ -260,11 +271,11 @@ export default function SetReminderModal(props) {
                     dropdownIconColor="white"
                     selectedValue={number}
                     onValueChange={n => {
-                      props.setItem(prev => ({
-                        ...prev,
-                        customReminder: `${n} ${units}`
-                      }));
                       setNumber(n);
+
+                      dbRef(`/todos/${route.params.item.id}`).update({
+                        customReminder: `${n} ${units}`
+                      });
                     }}
                   >
                     {
@@ -292,10 +303,9 @@ export default function SetReminderModal(props) {
                       //However the picker is pretty slow so it should be ok
                       setNumber(n.toString());
 
-                      props.setItem(prev => ({
-                        ...prev,
+                      dbRef(`/todos/${route.params.item.id}`).update({
                         customReminder: `${n} ${u}`
-                      }));
+                      });
 
                       setUnits(u);
                     }}
@@ -309,8 +319,8 @@ export default function SetReminderModal(props) {
               </Box>
             )
           }
-        </Modal.Body>
-      </Modal.Content>
-    </Modal>
+        </VStack>
+      </ScrollView>
+    </Box>
   )
 }
