@@ -25,6 +25,12 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleId" : "rickwang121@gmail.com",
+        "ascAppId": "1668256950",
+        "appleTeamId": "36LN6NH5Z7"
+      }
+    }
   }
 }

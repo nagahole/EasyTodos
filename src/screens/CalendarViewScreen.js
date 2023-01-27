@@ -97,9 +97,11 @@ export default function CalendarViewScreen({navigation, route}) {
         bg: "white"
       }}
 
-      pt={insets.top}
-      pl={insets.left}
-      pr={insets.right}
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right
+      }}
     >
       <Box>
         <HStack pt="3" px="3" justifyContent="space-between">
@@ -166,8 +168,8 @@ export default function CalendarViewScreen({navigation, route}) {
                 <Text color="white" flex={1.75} fontSize={22} lineHeight={28} mt="-1">{item.title}</Text>
                 {
                   item.reminder !== 'none' && (
-                    <HStack flex={1} space={1.5} justifyContent="flex-end" pt="0.5">
-                      <Text style={{ marginTop: -3.5 }} color="white" >
+                    <HStack flex={1} space={1.5} justifyContent="flex-end" pt="0.5" alignItems="center">
+                      <Text color="white" >
                         {
                           item.reminder !== "custom"
                           ? item.reminder 

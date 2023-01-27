@@ -22,8 +22,10 @@ export default function SettingsScreen({navigation, route}) {
         bg: "white"
       }}
 
-      pl={insets.left}
-      pr={insets.right}
+      style={{
+        paddingLeft: insets.left,
+        paddingRight: insets.right
+      }}
     >
       <ScrollView>
         <VStack>

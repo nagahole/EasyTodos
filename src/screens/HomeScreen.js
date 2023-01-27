@@ -306,7 +306,9 @@ export default function HomeScreen({navigation, route}) {
     } else if (weeksGap <= 0) {
       notifBody = `${dueMoment.format('dddd')}`;
     } else if (weeksGap <= 1) {
-      if (notifDate.getDay() > 5 || notifDate.getDay() == 0) { // saturday sunday
+      if ((notifDate.getDay() > 5 || notifDate.getDay() == 0) && // saturday sunday
+        dueDate.getDay() !== 0) { 
+        // Only if the due day isn't a Sunday 
         notifBody = `${dueMoment.format('dddd')}`;
       } else {
         notifBody = `Next ${dueMoment.format('dddd')}`;
@@ -318,7 +320,7 @@ export default function HomeScreen({navigation, route}) {
     if (!todoItem.allDay) 
       notifBody += ` at ${timeText}`;
 
-    console.log(notifBody);
+    //console.log(notifBody);
 
     // Request permissions (required for iOS)
     await notifee.requestPermission()
@@ -497,9 +499,11 @@ export default function HomeScreen({navigation, route}) {
       _light={{
         bg: "white"
       }}
-      pt={insets.top}
-      pl={insets.left}
-      pr={insets.right}
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right
+      }}
     >      
       <EditTodoModal
         isOpen={editModalOpen}

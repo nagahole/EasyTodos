@@ -55,10 +55,12 @@ export default function LoginScreen({navigation, route}) {
         bg: "white"
       }}
 
-      pt={insets.top}
-      pb={insets.bottom}
-      pl={insets.left}
-      pr={insets.right}
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+        paddingBottom: insets.bottom
+      }}
     >
       <Box safeArea p="2" py="2" w="90%" maxW="310">
         <VStack space={3}>

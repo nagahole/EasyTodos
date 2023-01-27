@@ -274,66 +274,59 @@ export default function FlatlistTodoItem(props) {
             }
             
           </Box>
-          <Box flex={5} py="4" px="4">
+          <Box flex={5} py="4" pl="3" pr="4">
             <HStack justifyContent="space-between">
-              <Text
-                mt="-1"
-                flex={1.5}
-                fontSize={25}
-                bold={true}
-                lineHeight={27}
-                _dark={{
-                  color: "white"
-                }}
-              >
-                {props.item.title}
-              </Text>
+              <VStack>
+                <Text
+                  mt="-1"
+                  flex={1.5}
+                  fontSize={25}
+                  bold={true}
+                  lineHeight={27}
+                  _dark={{
+                    color: "white"
+                  }}
+                >
+                  {props.item.title}
+                </Text>
+                {
+                  props.item.dueDate != undefined && props.item.dueDate != null && (
+                    <Text color="gray.500" mt="0.5">
+                      {
+                        props.item.allDay
+                        ? moment(props.item.dueDate).startOf('day').fromNow().capitalize()
+                        : moment(props.item.dueDate).fromNow().capitalize()
+                      }
+                    </Text>
+                  )
+                }
+              </VStack>
               {
-                function() {
-
-                  if (props.item.pinned || props.item.reminder !== "none")
-                    return (
-                      <VStack flex={1} space="2.5" alignItems="flex-end" mr="-1" mt="-0.5">
-                        {
-                          props.item.reminder !== "none" && props.item.dueDate != null && 
-                            <HStack space={1.5}>
-                              <Text style={{ marginTop: -3.5 }} color="gray.500" >
-                                {
-                                  props.item.reminder !== "custom"
-                                  ? props.item.reminder 
-                                  : props.item.customReminder.split(' ')[1] === 'minutes'
-                                  ? props.item.customReminder.split(' ')[0] + " mins"
-                                  : props.item.customReminder
-                                }
-                              </Text>
-                              <FontAwesomeIcon icon="fa-solid fa-bell" color="#fbbf24" size={16} style={{ marginTop: -0.5 }}/>
-                            </HStack>
-                        }
-                        {
-                          props.item.pinned &&
-                            <FontAwesomeIcon icon="fa-solid fa-thumbtack" color="white" style={{ marginRight: -0.13 }}/>
-                        }
-                      </VStack>
-                    )
-                }()
+                (props.item.pinned || props.item.reminder !== "none") && (
+                  <VStack flex={1} space="2" alignItems="flex-end" mr="-1" mt="-0.5">
+                    {
+                      props.item.reminder !== "none" && props.item.dueDate != null && 
+                        <HStack space={1.5} alignItems="center">
+                          <Text style={{ marginTop: -1 }} color="gray.500" >
+                            {
+                              props.item.reminder !== "custom"
+                              ? props.item.reminder 
+                              : props.item.customReminder.split(' ')[1] === 'minutes'
+                              ? props.item.customReminder.split(' ')[0] + " mins"
+                              : props.item.customReminder
+                            }
+                          </Text>
+                          <FontAwesomeIcon icon="fa-solid fa-bell" color="#fbbf24" size={16} style={{ marginTop: -0.5 }}/>
+                        </HStack>
+                    }
+                    {
+                      props.item.pinned &&
+                        <FontAwesomeIcon icon="fa-solid fa-thumbtack" color="white" style={{ marginRight: -0.13 }}/>
+                    }
+                  </VStack>
+                )
               }
             </HStack>
-            {
-              props.item.dueDate != undefined && props.item.dueDate != null &&
-                <Text color="gray.500" mt="0.5">
-                  {
-                    props.item.allDay
-                    ? moment(props.item.dueDate).startOf('day').fromNow().capitalize()
-                    : moment(props.item.dueDate).fromNow().capitalize()
-                  }
-                </Text>
-            }
-
-            {/* <Text TODO: Make it an option to show the created at date
-              color="dark.500"
-            >
-              {moment(props.item.createdAt).format('ddd MMM Do, h:mm a')}
-            </Text> */}
 
             {
               (props.item.description !== "") && 

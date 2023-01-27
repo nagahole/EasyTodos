@@ -48,9 +48,11 @@ export default function ProfileScreen({route, navigation}) {
         bg: "white"
       }}
 
-      pt={insets.top}
-      pl={insets.left}
-      pr={insets.right}
+      style={{
+        paddingTop: insets.top,
+        paddingLeft: insets.left,
+        paddingRight: insets.right
+      }}
     >
       <ScrollView>
         <VStack p="5">

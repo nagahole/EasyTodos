@@ -32,10 +32,12 @@ export default function ForgotPasswordScreen({navigation, route}) {
       _light={{
         bg: "white"
       }} 
-      pt={insets.top + 50}
-      pb={insets.bottom}
-      pl={insets.left}
-      pr={insets.right}
+      style={{
+        paddingTop: insets.top + 50,
+        paddingLeft: insets.left,
+        paddingRight: insets.right,
+        paddingBottom: insets.bottom
+      }}
       justifyContent="flex-start"
     >
       <Box safeArea p="2" w="90%" maxW="290" py="8">

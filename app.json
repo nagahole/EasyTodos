@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "EasyTodos",
+    "name": "Easy Todos",
     "slug": "EasyTodos",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -30,8 +30,8 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "y",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "bundleIdentifier" : "com.naga.EasyTodos"
     },
     "android": {
       "adaptiveIcon": {
