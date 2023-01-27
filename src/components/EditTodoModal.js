@@ -84,7 +84,7 @@ export default function EditTodoModal(props) {
       }}
       animationPreset="fade"
       style={{
-        paddingBottom: insets.bottom + Dimensions.get('window').height * 0.1
+        paddingBottom: insets.bottom + Dimensions.get('window').height * 0.1,
       }}
     >
     <KeyboardAvoidingView
@@ -105,7 +105,11 @@ export default function EditTodoModal(props) {
                 title: text
               }))
             }}
+            pr="8"
           /> 
+          <Modal.CloseButton
+            pt="2"
+          />
         </Modal.Header>
         <Modal.Body overflow="visible">
           <VStack space={4} overflow="visible">

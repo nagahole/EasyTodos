@@ -52,7 +52,6 @@ export default function CalendarViewScreen({navigation, route}) {
 
     let res = {};
 
-
     let until = new Date(Date.now() + 60 * 60 * 24 * daysForwardsToRender * 1000);
 
     for (
@@ -60,7 +59,7 @@ export default function CalendarViewScreen({navigation, route}) {
         d <= until; 
         d.setDate(d.getDate() + 1)
       ) {
-      res[new Date(d).toLocaleDateString('en-CA')] = [];
+      res[moment(d).format("YYYY-MM-DD")] = [];
     }
 
     //Parses todos into a format usable by <Agenda>
@@ -70,7 +69,7 @@ export default function CalendarViewScreen({navigation, route}) {
 
       let date = new Date(todo.dueDate);
 
-      let dateString = date.toLocaleDateString('en-CA'); // 2020-08-19 (year-month-day) notice the different locale
+      let dateString = moment(date).format("YYYY-MM-DD"); // 2020-08-19 (year-month-day) notice the different locale
 
       if (res.hasOwnProperty(dateString)) {
         res[dateString].push(todo);
@@ -103,7 +102,7 @@ export default function CalendarViewScreen({navigation, route}) {
       pr={insets.right}
     >
       <Box>
-        <HStack px="3" justifyContent="space-between">
+        <HStack pt="3" px="3" justifyContent="space-between">
           <Button
             variant="unstyled"
             colorScheme="green"

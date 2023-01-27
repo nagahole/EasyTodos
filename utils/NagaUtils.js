@@ -14,9 +14,9 @@ export default class NagaUtils {
         else 
           return x > y;
       } else if (a.allDay)
-        return x.getTime() > b.dueDate;
+        return x.getTime() - 1 > b.dueDate;
       else if (b.allDay)
-        return a.dueDate > y.getTime();
+        return a.dueDate > y.getTime() - 1; //Take away one so that all days always appear before other todos, even 12:00AM ones
       else 
         return a.dueDate > b.dueDate;
     }

@@ -1,7 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
 import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { Picker } from "@react-native-picker/picker";
-import { Box, HStack, Input, VStack, Text, Switch, Select, ScrollView } from "native-base";
+import moment from "moment";
+import { Box, HStack, Input, VStack, Text, Switch, Select, ScrollView, Button } from "native-base";
 import { useEffect, useState } from "react";
 import { LayoutAnimation } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
@@ -37,6 +38,24 @@ export default function EditTodoScreen({navigation, route}) {
       setShowDatePicker(true);
     }
   }, []);
+
+  const onChange = (event, selectedDate) => {
+    const currentDate = selectedDate;
+    dbRef(`/todos/${route.params.item.id}`).update({
+      dueDate: currentDate.getTime()
+    })
+    setDate(currentDate);
+  };
+
+  const showMode = (currentMode) => {
+    DateTimePickerAndroid.open({
+      minimumDate: new Date(),
+      value: date,
+      onChange,
+      mode: currentMode,
+      is24Hour: true,
+    });
+  };
 
   return (
     <Box
@@ -125,22 +144,20 @@ export default function EditTodoScreen({navigation, route}) {
                   });
                   setShowDatePicker(bool);
 
-                  dbRef(`/todos/${route.params.item.id}`).update({
-                    dueDate: bool? date : null
-                  })
+                  dbRef(`/todos/${route.params.item.id}`)
+                    .update({ dueDate: bool? date.getTime() : null});
                 }}
               />
               
             </HStack>
             {
-              //NON FUNCTIONAL : TODO - ADD THiS
               showDatePicker && Platform.OS === 'android' &&
                 <>
                   <Box mt="2" w='48' borderRadius="10" bg="dark.50:alpha.60" pt="1" pb="1.5" alignSelf="center">
                     <Text color="gray.400" textAlign="center" fontSize="16">
                       { 
                         moment(date).format(
-                          route.params.item.allDay? 'MMM Do' : 'MMM Do, h:mm a'
+                          allDay? 'MMM Do' : 'MMM Do, h:mm a'
                         ) 
                       }
                     </Text>
@@ -155,7 +172,7 @@ export default function EditTodoScreen({navigation, route}) {
                       Set date
                     </Button>
                     {
-                      !route.params.item.allDay && (
+                      !allDay && (
                         <Button
                           colorScheme="lightBlue"
                           onPress={() => {

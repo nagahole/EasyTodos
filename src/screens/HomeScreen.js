@@ -124,7 +124,7 @@ export default function HomeScreen({navigation, route}) {
       }
     });
 
-  }, [dbRef(), settings]);
+  }, []);
 
   useEffect(() => {
     readData();
@@ -199,6 +199,8 @@ export default function HomeScreen({navigation, route}) {
     if (todoItem.dueDate == null || todoItem.dueDate == undefined) {
       return;
     }
+
+    notifee.cancelNotification(todoItem.reminderID);
 
     let secondsPrior;
 
@@ -328,7 +330,7 @@ export default function HomeScreen({navigation, route}) {
     });
 
     // Create a trigger notification
-    await notifee.createTriggerNotification(
+    let reminderID = await notifee.createTriggerNotification(
       {
         title: `Reminder for ${todoItem.title}`,
         body: notifBody,
@@ -342,6 +344,8 @@ export default function HomeScreen({navigation, route}) {
       },
       trigger,
     );
+
+    todoItem.reminderID = reminderID;
   }
 
   function saveReminderModalChanges() {

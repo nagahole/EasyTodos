@@ -34,10 +34,6 @@ export default function AddTodoModal(props) {
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate;
-    props.setItem(prev => ({
-      ...prev,
-      dueDate: selectedDate.getTime()
-    }))
     setDate(currentDate);
   };
 

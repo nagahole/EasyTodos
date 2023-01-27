@@ -320,7 +320,7 @@ export default function FlatlistTodoItem(props) {
             </HStack>
             {
               props.item.dueDate != undefined && props.item.dueDate != null &&
-                <Text color="gray.500">
+                <Text color="gray.500" mt="0.5">
                   {
                     props.item.allDay
                     ? moment(props.item.dueDate).startOf('day').fromNow().capitalize()
@@ -328,11 +328,12 @@ export default function FlatlistTodoItem(props) {
                   }
                 </Text>
             }
-            <Text
+
+            {/* <Text TODO: Make it an option to show the created at date
               color="dark.500"
             >
               {moment(props.item.createdAt).format('ddd MMM Do, h:mm a')}
-            </Text>
+            </Text> */}
 
             {
               (props.item.description !== "") && 
