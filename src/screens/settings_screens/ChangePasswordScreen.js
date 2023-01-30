@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Box, Button, Center, FormControl, Heading, Input, VStack } from 'native-base'
+import { Box, Button, Center, FormControl, Heading, Input, Text, VStack } from 'native-base'
 import auth from "@react-native-firebase/auth";
 import { useNavigation } from '@react-navigation/native';
 import { Alert } from 'react-native';
@@ -7,6 +7,7 @@ import { checkPasswordErrors } from '../pre_login_screens/RegisterScreen';
 import { firebase } from '../../firebase';
 import { connect } from 'react-redux';
 import { setPassword } from '../../redux/action';
+import NagaUtils from '../../../utils/NagaUtils';
 
 
 
@@ -20,6 +21,23 @@ class ChangePasswordScreen extends React.Component {
       confirmNewPassword: "",
       errors: {}
     }
+  }
+
+  resetPassword = () => {
+    auth().currentUser
+      .updatePassword(this.state.newPassword)
+      .then(() => {
+        this.props.navigation.goBack();
+
+        this.setState({
+          currentPassword: "",
+          newPassword: "",
+          confirmNewPassword: ""
+        });
+
+        Alert.alert("Password updated");
+      })
+      .catch((error) => { Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message) });
   }
 
   handleResetPassword = () => {
@@ -52,6 +70,12 @@ class ChangePasswordScreen extends React.Component {
       if (Object.keys(this.state.errors).length > 0 || hasError)
         return;
 
+      if (!NagaUtils.isSignedInWithPassword()) {
+        this.resetPassword();
+        return; 
+      }
+
+      //Cannot reauthenticate if password is not a pre-existing provider
 
       this
         .reauthenticate(this.state.currentPassword)
@@ -65,20 +89,9 @@ class ChangePasswordScreen extends React.Component {
             }));
             return;
           }
-          auth().currentUser
-            .updatePassword(this.state.newPassword)
-            .then(() => {
-              this.props.navigation.goBack();
 
-              this.setState({
-                currentPassword: "",
-                newPassword: "",
-                confirmNewPassword: ""
-              });
-
-              Alert.alert("Password updated");
-            })
-            .catch((error) => { Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message) });
+          //Everything successful
+          this.resetPassword();
         })
         .catch((error) => { 
           if (error.code === 'auth/wrong-password') {
@@ -119,23 +132,27 @@ class ChangePasswordScreen extends React.Component {
       >
         <Box p="2" w="90%" maxW="290" py="8">
           <VStack space={3} mb="40">
-            <FormControl isInvalid={"currentPassword" in this.state.errors}>
-              <FormControl.Label isInvalid={"currentPassword" in this.state.errors}>Current password</FormControl.Label>
-              <Input  
-                fontSize={16} h={10} 
-                type='password'
-                value={this.state.currentPassword} 
-                onChangeText={text => this.setState({currentPassword: text})}
-                variant="filled"
-                _focus={{
-                  _dark: {
-                    borderColor: 'gray.600',
-                    backgroundColor: 'dark.100'
-                  }
-                }}
-              />
-              <FormControl.ErrorMessage>- {this.state.errors.currentPassword}</FormControl.ErrorMessage>
-            </FormControl>
+            {
+              NagaUtils.isSignedInWithPassword() && ( //Only renders if user has a password
+                <FormControl isInvalid={"currentPassword" in this.state.errors}>
+                  <FormControl.Label isInvalid={"currentPassword" in this.state.errors}>Current password</FormControl.Label>
+                  <Input  
+                    fontSize={16} h={10} 
+                    type='password'
+                    value={this.state.currentPassword} 
+                    onChangeText={text => this.setState({currentPassword: text})}
+                    variant="filled"
+                    _focus={{
+                      _dark: {
+                        borderColor: 'gray.600',
+                        backgroundColor: 'dark.100'
+                      }
+                    }}
+                  />
+                  <FormControl.ErrorMessage>- {this.state.errors.currentPassword}</FormControl.ErrorMessage>
+                </FormControl>
+              )
+            }
             <FormControl isInvalid={"password" in this.state.errors}>
               <FormControl.Label>New password</FormControl.Label>
               <Input 

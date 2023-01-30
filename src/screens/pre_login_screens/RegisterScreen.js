@@ -101,14 +101,12 @@ class RegisterScreen extends React.Component {
       auth()
         .createUserWithEmailAndPassword(this.state.email, this.state.password)
         .then(userCredentials => {
-          auth().currentUser.sendEmailVerification({
-            handleCodeInApp: true,
-            url: "https://easy-todo-ffcb3.firebaseapp.com"
-          })
+          auth().currentUser
+            .sendEmailVerification()
             .then(() => {
               Alert.alert("Email verification sent");
             })
-            .catch(error => Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message));
+            .catch(error => { console.log(error); Alert.alert(error.code, error.message)});//error.nativeErrorCode, error.nativeErrorMessage?? error.message));
         })
         .catch(error => Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message));
     })

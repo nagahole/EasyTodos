@@ -1,4 +1,22 @@
+import auth from "@react-native-firebase/auth"
+
 export default class NagaUtils {
+  static isSignedInWithPassword() {
+    let providerData = auth().currentUser?.providerData
+
+    if (providerData == undefined || providerData == null) {
+      console.warn("Current user is null or undefined");
+    }
+
+    for (let data of providerData) {
+      if (data.providerId === "password") {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   static sortTodoComparator(a, b, sortBy) {
     function compareDueDate() {
 

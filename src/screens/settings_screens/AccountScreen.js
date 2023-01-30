@@ -39,6 +39,7 @@ export default function AccountScreen({navigation, route}) {
           )}/>
           <SettingsTextItem text="Edit email" onPress={() => {navigation.navigate("Edit Email")}}/>
           <SettingsTextItem text="Change password" onPress={() => { navigation.navigate("Change Password")}}/>
+          <SettingsTextItem text="Delete account" textStyle={{color: 'red'}} onPress={() => { navigation.navigate("Delete Account")}}/>
         </VStack>
       </ScrollView>
     </Box>

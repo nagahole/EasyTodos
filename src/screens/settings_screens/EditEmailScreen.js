@@ -9,6 +9,7 @@ import { emailHasErrors } from '../pre_login_screens/RegisterScreen';
 import { firebase } from '../../firebase';
 import { connect } from 'react-redux';
 import { setEmail, setPassword } from '../../redux/action';
+import NagaUtils from '../../../utils/NagaUtils';
 
 
 
@@ -21,6 +22,24 @@ class EditEmailScreen extends React.Component {
       newEmail: "",
       errors: {}
     }
+  }
+
+  editEmail = () => {
+    auth().currentUser
+      .updateEmail(this.state.newEmail)
+      .then(() => {
+        auth().currentUser.sendEmailVerification()
+          .then(() => {
+            this.setState({
+              currentPassword: "",
+              newEmail: "",
+            });
+            this.props.navigation.goBack();
+            Alert.alert("Email updated and verification sent");
+          })
+          .catch((error) => {Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message )})
+      })
+      .catch((error) => { Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message) });
   }
 
   handleEditEmail = () => {
@@ -44,26 +63,18 @@ class EditEmailScreen extends React.Component {
       if (Object.keys(this.state.errors).length > 0 || hasError)
         return;
 
+      if (!NagaUtils.isSignedInWithPassword()) {
+        this.editEmail();
+        return;
+      }
+
+      //Cannot authenticate with password if signed in with Google or Apple etc
 
       this
         .reauthenticate(this.state.currentPassword)
         .then(() => {
           // Current password is correct
-          auth().currentUser
-            .updateEmail(this.state.newEmail)
-            .then(() => {
-              auth().currentUser.sendEmailVerification()
-                .then(() => {
-                  this.setState({
-                    currentPassword: "",
-                    newEmail: "",
-                  });
-                  this.props.navigation.goBack();
-                  Alert.alert("Email updated and verification sent");
-                })
-                .catch((error) => {Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message )})
-            })
-            .catch((error) => { Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message) });
+          this.editEmail();
         })
         .catch((error) => { 
           Alert.alert(error.nativeErrorCode, error.nativeErrorMessage?? error.message);
@@ -94,23 +105,27 @@ class EditEmailScreen extends React.Component {
       >
         <Box p="2" w="90%" maxW="290" py="8">
           <VStack space={5} mb="40">
-            <FormControl isInvalid={"currentPassword" in this.state.errors}>
-              <FormControl.Label isInvalid={"currentPassword" in this.state.errors}>Current password</FormControl.Label>
-              <Input  
-                fontSize={16} h={10} 
-                type='password'
-                value={this.state.currentPassword} 
-                onChangeText={text => this.setState({currentPassword: text})}
-                variant="filled"
-                _focus={{
-                  _dark: {
-                    borderColor: 'gray.600',
-                    backgroundColor: 'dark.100'
-                  }
-                }}
-              />
-              <FormControl.ErrorMessage>- {this.state.errors.currentPassword}</FormControl.ErrorMessage>
-            </FormControl>
+            {
+              NagaUtils.isSignedInWithPassword() && (
+                <FormControl isInvalid={"currentPassword" in this.state.errors}>
+                  <FormControl.Label isInvalid={"currentPassword" in this.state.errors}>Current password</FormControl.Label>
+                  <Input  
+                    fontSize={16} h={10} 
+                    type='password'
+                    value={this.state.currentPassword} 
+                    onChangeText={text => this.setState({currentPassword: text})}
+                    variant="filled"
+                    _focus={{
+                      _dark: {
+                        borderColor: 'gray.600',
+                        backgroundColor: 'dark.100'
+                      }
+                    }}
+                  />
+                  <FormControl.ErrorMessage>- {this.state.errors.currentPassword}</FormControl.ErrorMessage>
+                </FormControl>
+              )
+            }
             <FormControl isInvalid={"email" in this.state.errors}>
               <FormControl.Label>New email</FormControl.Label>
               <Input 

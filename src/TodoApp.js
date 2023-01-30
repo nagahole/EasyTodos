@@ -11,6 +11,7 @@ import { useColorMode } from 'native-base';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faPlus, faClock, faCircle, faCheck, faTrash, faThumbTack, faPencil, faSlash, faBars, faFilter, faRotateLeft,
   faCircleCheck, faLeftLong, faChevronRight, faBell, faBellSlash } from '@fortawesome/free-solid-svg-icons'
+import { faGoogle } from '@fortawesome/free-brands-svg-icons';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,7 +26,7 @@ const MyTheme = {
 };
 
 library.add(faPlus, faClock, faCircle, faCheck, faTrash, faThumbTack, faPencil, faSlash, faBars, faFilter, faRotateLeft,
-  faCircleCheck, faLeftLong, faChevronRight, faBell, faBellSlash);
+  faCircleCheck, faLeftLong, faChevronRight, faBell, faBellSlash, faGoogle);
 
 export default function TodoApp() {
 
